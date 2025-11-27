@@ -1,0 +1,31 @@
+package com.jpcard.service;
+
+import com.jpcard.domain.user.Role;
+import com.jpcard.domain.user.User;
+import com.jpcard.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public User signup(String username, String rawPassword) {
+
+        userRepository.findByUsername(username)
+                .ifPresent(u -> { throw new IllegalArgumentException("이미 존재하는 사용자"); });
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.addRole(Role.ROLE_USER);
+
+        return userRepository.save(user);
+    }
+}

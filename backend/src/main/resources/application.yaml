@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: jpcard
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/jpcard?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발 중만. 운영은 validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+
+jwt:
+  secret: bT9fV0l6S1p3N2xqYThRMnRFS1pYbG1yUTZ6c2pHa2l4d0tEdTN5b0Z6Y0V1cGJvYjF4M1E3Z1E=
