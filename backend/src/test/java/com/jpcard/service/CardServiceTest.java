@@ -64,4 +64,18 @@ class CardServiceTest {
 
         verify(cardRepository).deleteById(1L);
     }
+
+    @Test
+    void toggleMemorized() {
+        Card card = new Card();
+        card.setId(1L);
+        card.setMemorized(false);
+
+        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+
+        Card updated = cardService.changeMemorizedStatus(1L, true);
+
+        assertTrue(updated.isMemorized());
+        verify(cardRepository).findById(1L);
+    }
 }
