@@ -5,8 +5,11 @@ import com.jpcard.controller.dto.PostResponse;
 import com.jpcard.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,9 +32,27 @@ public class PostController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PostResponse> get(@PathVariable Long id) {
+        var post = postService.findById(id);
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent()));
+    }
+
     @PostMapping
     public ResponseEntity<PostResponse> create(@RequestBody PostRequest request) {
         var post = postService.create(request.title(), request.content());
         return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResponse> update(@PathVariable Long id, @RequestBody PostRequest request) {
+        var post = postService.update(id, request.title(), request.content());
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        postService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

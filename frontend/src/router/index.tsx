@@ -3,8 +3,10 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import CardsPage from "../pages/CardsPage";
 import CardCreatePage from "../pages/CardCreatePage";
+import CardEditPage from "../pages/CardEditPage";
 import PostsPage from "../pages/PostsPage";
 import PostCreatePage from "../pages/PostCreatePage";
+import PostEditPage from "../pages/PostEditPage";
 import UserPage from "../pages/UserPage";
 import HomePage from "../pages/HomePage";
 
@@ -13,8 +15,10 @@ export const router = createBrowserRouter([
   { path: "/register", element: <RegisterPage /> },
   { path: "/cards", element: <CardsPage /> },
   { path: "/cards/create", element: <CardCreatePage /> },
+  { path: "/cards/:id/edit", element: <CardEditPage /> },
   { path: "/posts", element: <PostsPage /> },
   { path: "/posts/create", element: <PostCreatePage /> },
+  { path: "/posts/:id/edit", element: <PostEditPage /> },
   { path: "/user", element: <UserPage /> },
   { path: "/", element: <HomePage /> }, 
 ]);

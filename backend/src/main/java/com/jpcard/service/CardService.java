@@ -26,4 +26,23 @@ public class CardService {
         card.setMeaning(meaning);
         return cardRepository.save(card);
     }
+
+    @Transactional(readOnly = true)
+    public Card findById(Long id) {
+        return cardRepository.findById(id)
+                .orElseThrow(() -> new com.jpcard.util.ResourceNotFoundException("Card not found with id: " + id));
+    }
+
+    @Transactional
+    public Card update(Long id, String term, String meaning) {
+        Card card = findById(id);
+        card.setTerm(term);
+        card.setMeaning(meaning);
+        return card;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        cardRepository.deleteById(id);
+    }
 }
