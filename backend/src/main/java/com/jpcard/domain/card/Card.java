@@ -19,4 +19,7 @@ public class Card {
 
     @Column(nullable = false)
     private String meaning;
+
+    @Column(nullable = false)
+    private boolean isMemorized = false;
 }

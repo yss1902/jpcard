@@ -45,4 +45,11 @@ public class CardService {
     public void delete(Long id) {
         cardRepository.deleteById(id);
     }
+
+    @Transactional
+    public Card changeMemorizedStatus(Long id, boolean isMemorized) {
+        Card card = findById(id);
+        card.setMemorized(isMemorized);
+        return card;
+    }
 }
