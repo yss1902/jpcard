@@ -34,8 +34,30 @@ export default function CardsPage() {
         <div className="card-grid" style={{ marginTop: 14 }}>
           {cards.map((c) => (
             <article key={c.id} className="item-tile">
-              <h3 className="item-title">{c.term}</h3>
-              <p className="item-subtitle">{c.meaning}</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                <div>
+                  <h3 className="item-title">{c.term}</h3>
+                  <p className="item-subtitle">{c.meaning}</p>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Link to={`/cards/${c.id}/edit`} className="muted" style={{ fontSize: "0.8rem", textDecoration: "underline" }}>
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if(window.confirm("정말 삭제하시겠습니까?")) {
+                        api.delete(`/cards/${c.id}`).then(() => {
+                           setCards(cards.filter(card => card.id !== c.id));
+                        }).catch(() => alert("삭제 실패"));
+                      }
+                    }}
+                    className="muted"
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.8rem", textDecoration: "underline", padding: 0 }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </article>
           ))}
         </div>

@@ -34,8 +34,30 @@ export default function PostsPage() {
         <div className="card-grid" style={{ marginTop: 14 }}>
           {posts.map((p) => (
             <article key={p.id} className="item-tile">
-              <h3 className="item-title">{p.title}</h3>
-              <p className="item-subtitle">{p.content}</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                <div>
+                  <h3 className="item-title">{p.title}</h3>
+                  <p className="item-subtitle">{p.content}</p>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Link to={`/posts/${p.id}/edit`} className="muted" style={{ fontSize: "0.8rem", textDecoration: "underline" }}>
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if(window.confirm("정말 삭제하시겠습니까?")) {
+                        api.delete(`/posts/${p.id}`).then(() => {
+                           setPosts(posts.filter(post => post.id !== p.id));
+                        }).catch(() => alert("삭제 실패"));
+                      }
+                    }}
+                    className="muted"
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.8rem", textDecoration: "underline", padding: 0 }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </article>
           ))}
         </div>

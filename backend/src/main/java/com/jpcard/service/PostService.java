@@ -26,4 +26,23 @@ public class PostService {
         post.setContent(content);
         return postRepository.save(post);
     }
+
+    @Transactional(readOnly = true)
+    public Post findById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new com.jpcard.util.ResourceNotFoundException("Post not found with id: " + id));
+    }
+
+    @Transactional
+    public Post update(Long id, String title, String content) {
+        Post post = findById(id);
+        post.setTitle(title);
+        post.setContent(content);
+        return post;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        postRepository.deleteById(id);
+    }
 }
