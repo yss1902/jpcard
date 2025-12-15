@@ -4,10 +4,6 @@ import Layout from "../components/Layout";
 import { useParams, useNavigate } from "react-router-dom";
 import type { Post } from "../types/post";
 
-// Assuming Post type exists or I need to infer it.
-// Let's check `frontend/src/types` to be sure, but I'll write it assuming standard shape.
-// Actually I should verify if types/post.ts exists.
-
 export default function PostEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
