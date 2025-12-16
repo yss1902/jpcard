@@ -10,17 +10,24 @@ import PostCreatePage from "../pages/PostCreatePage";
 import PostEditPage from "../pages/PostEditPage";
 import UserPage from "../pages/UserPage";
 import HomePage from "../pages/HomePage";
+import ErrorPage from "../components/ErrorPage";
 
 export const router = createBrowserRouter([
-  { path: "/login", element: <LoginPage /> },
-  { path: "/register", element: <RegisterPage /> },
-  { path: "/cards", element: <CardsPage /> },
-  { path: "/cards/create", element: <CardCreatePage /> },
-  { path: "/cards/:id/edit", element: <CardEditPage /> },
-  { path: "/study", element: <StudyPage /> },
-  { path: "/posts", element: <PostsPage /> },
-  { path: "/posts/create", element: <PostCreatePage /> },
-  { path: "/posts/:id/edit", element: <PostEditPage /> },
-  { path: "/user", element: <UserPage /> },
-  { path: "/", element: <HomePage /> }, 
+  {
+    path: "/",
+    errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "login", element: <LoginPage /> },
+      { path: "register", element: <RegisterPage /> },
+      { path: "cards", element: <CardsPage /> },
+      { path: "cards/create", element: <CardCreatePage /> },
+      { path: "cards/:id/edit", element: <CardEditPage /> },
+      { path: "study", element: <StudyPage /> },
+      { path: "posts", element: <PostsPage /> },
+      { path: "posts/create", element: <PostCreatePage /> },
+      { path: "posts/:id/edit", element: <PostEditPage /> },
+      { path: "user", element: <UserPage /> },
+    ],
+  },
 ]);
