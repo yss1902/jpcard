@@ -19,23 +19,18 @@ public class CardService {
     private final DeckRepository deckRepository;
 
     @Transactional(readOnly = true)
+    public List<Card> search(Long deckId, Boolean memorized, String keyword) {
+        return cardRepository.search(deckId, memorized, keyword);
+    }
+
+    @Transactional(readOnly = true)
     public List<Card> findAll() {
         return cardRepository.findAll();
     }
 
     @Transactional(readOnly = true)
     public List<Card> findByDeckId(Long deckId) {
-        // I need to add findByDeckId to CardRepository first, or use simple filtering if list is small.
-        // Better to add method to Repo.
-        // For now, let's defer adding to repo and assume findAll filter, OR simpler:
-        // Actually, I can't filter findAll() efficiently if I want pagination later.
-        // Let's modify CardRepository in next step. For now I'll leave this unimplemented or use stream filter (inefficient but works for small app).
-        // Wait, I can't use stream filter on Lazy loaded deck... well I can if I fetch all.
-        // Ideally: return cardRepository.findAll().stream().filter(c -> c.getDeck() != null && c.getDeck().getId().equals(deckId)).toList();
-        // But better to add method.
-        return cardRepository.findAll().stream()
-                .filter(c -> c.getDeck() != null && c.getDeck().getId().equals(deckId))
-                .toList();
+        return cardRepository.search(deckId, null, null);
     }
 
     @Transactional

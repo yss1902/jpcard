@@ -28,8 +28,12 @@ public class CardController {
     private final CardService cardService;
 
     @GetMapping
-    public ResponseEntity<List<CardResponse>> list(@RequestParam(required = false) Long deckId) {
-        List<Card> cards = (deckId != null) ? cardService.findByDeckId(deckId) : cardService.findAll();
+    public ResponseEntity<List<CardResponse>> list(
+            @RequestParam(required = false) Long deckId,
+            @RequestParam(required = false) Boolean memorized,
+            @RequestParam(required = false) String q) {
+
+        List<Card> cards = cardService.search(deckId, memorized, q);
         List<CardResponse> responses = cards.stream()
                 .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null))
                 .collect(Collectors.toList());

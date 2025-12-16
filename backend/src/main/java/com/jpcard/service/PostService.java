@@ -15,6 +15,11 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional(readOnly = true)
+    public List<Post> search(String keyword) {
+        return postRepository.search(keyword);
+    }
+
+    @Transactional(readOnly = true)
     public List<Post> findAll() {
         return postRepository.findAll();
     }

@@ -6,38 +6,97 @@ import type { Card } from "../types/card";
 
 export default function CardsPage() {
   const [cards, setCards] = useState<Card[]>([]);
-  const [status, setStatus] = useState("카드를 불러오는 중...");
+  const [status, setStatus] = useState("Loading...");
+
+  // Search States
+  const [query, setQuery] = useState("");
+  const [showMemorized, setShowMemorized] = useState(false);
+
+  // Debounce logic or just search on button click. For now simple effect with dependency on states.
+  // Actually, let's fetch on change but with debouncing is better.
+  // Given the requirement, I'll just trigger fetch when these change.
 
   useEffect(() => {
+    fetchCards();
+  }, [query, showMemorized]);
+
+  const fetchCards = () => {
+    // Build query params
+    const params = new URLSearchParams();
+    if (query) params.append("q", query);
+    // If showMemorized is true (checked), we want ALL (null). If false (unchecked), we assume "hide memorized" or "all"?
+    // "Show Memorized" toggle usually implies: if OFF, show all? Or if OFF, hide memorized?
+    // Let's implement: "Memorized Only" vs "All" vs "Pending Only".
+    // Simple filter: "Show Memorized" toggle.
+    // Backend accepts `memorized` boolean. True=Only Memorized. False=Only Pending. Null=All.
+    // Let's make a dropdown or 3-way toggle.
+    // Or simpler: A checkbox "Memorized Only" (memorized=true). A checkbox "Pending Only" (memorized=false).
+    // Let's stick to the previous Study Mode pattern: "Hide Memorized" (memorized=false).
+
+    // UI: Filter: [All / Pending / Memorized]
+    // Default All.
+  };
+
+  // Re-writing state to support 3-way filter
+  const [filterType, setFilterType] = useState<"ALL" | "PENDING" | "MEMORIZED">("ALL");
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query) params.append("q", query);
+    if (filterType === "PENDING") params.append("memorized", "false");
+    if (filterType === "MEMORIZED") params.append("memorized", "true");
+
     api
-      .get<Card[]>("/cards")
+      .get<Card[]>(`/cards?${params.toString()}`)
       .then((res) => {
         setCards(res.data);
-        setStatus(res.data.length ? "불러오기 완료" : "아직 카드가 없습니다. 새로 만들어보세요.");
+        setStatus(res.data.length ? "" : "No cards found.");
       })
-      .catch(() => setStatus("카드를 불러오지 못했습니다. API를 확인하세요."));
-  }, []);
+      .catch(() => setStatus("Failed to load cards."));
+  }, [query, filterType]);
 
   return (
-    <Layout pageTitle="Flash Cards" subtitle="블랙 앤 화이트로 정돈된 단어 카드 목록">
+    <Layout pageTitle="Flash Cards" subtitle="Browse and manage your vocabulary">
       <section className="glass-card">
         <div className="card-header">
           <div>
-            <p className="muted">Vocabulary Deck</p>
-            <h2 className="card-title">학습 카드</h2>
+            <h2 className="card-title">All Cards</h2>
           </div>
           <Link to="/cards/create" className="primary-btn">
-            새 카드 작성
+            New Card
           </Link>
         </div>
+
+        {/* Search & Filter Bar */}
+        <div style={{ display: "flex", gap: 10, margin: "20px 0", flexWrap: "wrap" }}>
+           <input
+             className="input-field"
+             style={{ flex: 1, minWidth: 200 }}
+             placeholder="Search term or meaning..."
+             value={query}
+             onChange={(e) => setQuery(e.target.value)}
+           />
+           <select
+             className="input-field"
+             style={{ width: "auto" }}
+             value={filterType}
+             onChange={(e) => setFilterType(e.target.value as any)}
+           >
+             <option value="ALL">All Status</option>
+             <option value="PENDING">Pending</option>
+             <option value="MEMORIZED">Memorized</option>
+           </select>
+        </div>
+
         <p className="muted">{status}</p>
-        <div className="card-grid" style={{ marginTop: 14 }}>
+        <div className="card-grid">
           {cards.map((c) => (
             <article key={c.id} className="item-tile">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
                 <div>
                   <h3 className="item-title">{c.term}</h3>
                   <p className="item-subtitle">{c.meaning}</p>
+                  {c.isMemorized && <span className="pill" style={{marginTop: 5, fontSize: '0.7rem'}}>Memorized</span>}
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link to={`/cards/${c.id}/edit`} className="muted" style={{ fontSize: "0.8rem", textDecoration: "underline" }}>
@@ -45,10 +104,10 @@ export default function CardsPage() {
                   </Link>
                   <button
                     onClick={() => {
-                      if(window.confirm("정말 삭제하시겠습니까?")) {
+                      if(window.confirm("Delete this card?")) {
                         api.delete(`/cards/${c.id}`).then(() => {
                            setCards(cards.filter(card => card.id !== c.id));
-                        }).catch(() => alert("삭제 실패"));
+                        }).catch(() => alert("Failed to delete"));
                       }
                     }}
                     className="muted"

@@ -6,38 +6,55 @@ import type { Post } from "../types/post";
 
 export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [status, setStatus] = useState("게시글을 불러오는 중...");
+  const [status, setStatus] = useState("Loading...");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
+    const params = new URLSearchParams();
+    if (query) params.append("q", query);
+
     api
-      .get<Post[]>("/posts")
+      .get<Post[]>(`/posts?${params.toString()}`)
       .then((res) => {
         setPosts(res.data);
-        setStatus(res.data.length ? "업데이트 완료" : "게시글이 없습니다. 첫 글을 작성하세요.");
+        setStatus(res.data.length ? "" : "No posts found.");
       })
-      .catch(() => setStatus("게시글을 불러오지 못했습니다. API를 확인하세요."));
-  }, []);
+      .catch(() => setStatus("Failed to load posts."));
+  }, [query]);
 
   return (
-    <Layout pageTitle="Posts" subtitle="모던 흑백 카드로 정리된 커뮤니티 글">
+    <Layout pageTitle="Posts" subtitle="Community updates">
       <section className="glass-card">
         <div className="card-header">
           <div>
-            <p className="muted">Team Updates</p>
-            <h2 className="card-title">게시글</h2>
+            <h2 className="card-title">Posts</h2>
           </div>
           <Link to="/posts/create" className="primary-btn">
-            새 글 작성
+            New Post
           </Link>
         </div>
+
+        {/* Search Bar */}
+        <div style={{ margin: "20px 0" }}>
+           <input
+             className="input-field"
+             style={{ width: "100%" }}
+             placeholder="Search posts..."
+             value={query}
+             onChange={(e) => setQuery(e.target.value)}
+           />
+        </div>
+
         <p className="muted">{status}</p>
-        <div className="card-grid" style={{ marginTop: 14 }}>
+        <div className="card-grid">
           {posts.map((p) => (
             <article key={p.id} className="item-tile">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
                 <div>
                   <h3 className="item-title">{p.title}</h3>
-                  <p className="item-subtitle">{p.content}</p>
+                  <p className="item-subtitle" style={{ whiteSpace: "pre-wrap" }}>
+                    {p.content}
+                  </p>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link to={`/posts/${p.id}/edit`} className="muted" style={{ fontSize: "0.8rem", textDecoration: "underline" }}>
@@ -45,10 +62,10 @@ export default function PostsPage() {
                   </Link>
                   <button
                     onClick={() => {
-                      if(window.confirm("정말 삭제하시겠습니까?")) {
+                      if(window.confirm("Delete post?")) {
                         api.delete(`/posts/${p.id}`).then(() => {
                            setPosts(posts.filter(post => post.id !== p.id));
-                        }).catch(() => alert("삭제 실패"));
+                        }).catch(() => alert("Failed to delete"));
                       }
                     }}
                     className="muted"
