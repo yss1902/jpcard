@@ -1,5 +1,6 @@
 package com.jpcard.domain.card;
 
+import com.jpcard.domain.deck.Deck;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,4 +23,8 @@ public class Card {
 
     @Column(nullable = false)
     private boolean isMemorized = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deck_id")
+    private Deck deck;
 }

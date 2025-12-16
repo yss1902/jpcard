@@ -3,4 +3,5 @@ export interface Card {
   term: string;
   meaning: string;
   isMemorized: boolean;
+  deckId?: number;
 }

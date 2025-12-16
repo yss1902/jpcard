@@ -1,18 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import type { Deck } from "../types/deck";
 
 export default function CardCreatePage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preSelectedDeckId = searchParams.get("deckId");
+
   const [term, setTerm] = useState("");
   const [meaning, setMeaning] = useState("");
+  const [deckId, setDeckId] = useState(preSelectedDeckId || "");
+  const [decks, setDecks] = useState<Deck[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
-  const onCreate = async () => {
+  useEffect(() => {
+    api.get<Deck[]>("/decks").then(res => setDecks(res.data)).catch(console.error);
+  }, []);
+
+  const onCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      await api.post("/cards", { term, meaning });
-      setStatus("카드를 만들었습니다. 목록에서 확인하세요!");
-      setTerm("");
-      setMeaning("");
+      await api.post("/cards", { term, meaning, deckId: deckId ? Number(deckId) : null });
+      if (deckId) {
+          navigate(`/decks/${deckId}`);
+      } else {
+          navigate("/cards");
+      }
     } catch (err) {
       console.error(err);
       setStatus("카드 생성 실패. API 연결을 다시 확인해주세요.");
@@ -31,7 +46,7 @@ export default function CardCreatePage() {
             내용 지우기
           </button>
         </div>
-        <div className="form-grid">
+        <form onSubmit={onCreate} className="form-grid">
           <div className="input-field">
             <label htmlFor="card-term">용어</label>
             <input
@@ -40,6 +55,7 @@ export default function CardCreatePage() {
               placeholder="예: サンプル / sample"
               value={term}
               onChange={(e) => setTerm(e.target.value)}
+              required
             />
           </div>
           <div className="input-field">
@@ -50,13 +66,29 @@ export default function CardCreatePage() {
               placeholder="간단한 뜻을 입력"
               value={meaning}
               onChange={(e) => setMeaning(e.target.value)}
+              required
             />
           </div>
-          <button className="primary-btn" onClick={onCreate}>
+          <div className="input-field">
+             <label htmlFor="card-deck">Deck (Optional)</label>
+             <select
+               id="card-deck"
+               className="text-input"
+               value={deckId}
+               onChange={e => setDeckId(e.target.value)}
+               style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+             >
+                <option value="">No Deck</option>
+                {decks.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+             </select>
+          </div>
+          <button type="submit" className="primary-btn">
             카드 생성
           </button>
           {status && <p className="muted">{status}</p>}
-        </div>
+        </form>
       </section>
     </Layout>
   );
