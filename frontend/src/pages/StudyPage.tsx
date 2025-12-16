@@ -15,6 +15,9 @@ export default function StudyPage() {
     fetchCards();
   }, []);
 
+  const filteredCards = showAll ? cards : cards.filter((c) => !c.isMemorized);
+  const currentCard = filteredCards[currentIndex];
+
   // Fix: Clamp currentIndex if it goes out of bounds when list shrinks
   useEffect(() => {
     if (filteredCards.length > 0 && currentIndex >= filteredCards.length) {
@@ -32,9 +35,6 @@ export default function StudyPage() {
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   };
-
-  const filteredCards = showAll ? cards : cards.filter((c) => !c.isMemorized);
-  const currentCard = filteredCards[currentIndex];
 
   const handleNext = () => {
     setIsFlipped(false);
