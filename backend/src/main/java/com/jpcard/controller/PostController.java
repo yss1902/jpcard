@@ -30,7 +30,7 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> list(@RequestParam(required = false) String q) {
         List<Post> posts = postService.search(q);
         List<PostResponse> responses = posts.stream()
-                .map(post -> new PostResponse(post.getId(), post.getTitle(), post.getContent()))
+                .map(post -> new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -38,24 +38,30 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> get(@PathVariable Long id) {
         var post = postService.findById(id);
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent()));
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
     }
 
     @PostMapping
     public ResponseEntity<PostResponse> create(@RequestBody PostRequest request) {
         var post = postService.create(request.title(), request.content());
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent()));
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable Long id, @RequestBody PostRequest request) {
         var post = postService.update(id, request.title(), request.content());
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent()));
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         postService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<PostResponse> like(@PathVariable Long id) {
+        var post = postService.likePost(id);
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
     }
 }

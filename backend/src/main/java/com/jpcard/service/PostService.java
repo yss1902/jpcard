@@ -50,4 +50,11 @@ public class PostService {
     public void delete(Long id) {
         postRepository.deleteById(id);
     }
+
+    @Transactional
+    public Post likePost(Long id) {
+        Post post = findById(id);
+        post.setLikeCount(post.getLikeCount() + 1);
+        return post; // Updated post is returned, Transactional will save it.
+    }
 }
