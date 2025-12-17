@@ -21,7 +21,7 @@ export default function DeckCreatePage() {
   };
 
   return (
-    <Layout pageTitle="Create Deck" subtitle="New collection of cards">
+    <Layout pageTitle="Create Deck">
       <section className="glass-card">
         <h2 className="card-title">New Deck</h2>
         {status && <p className="muted">{status}</p>}

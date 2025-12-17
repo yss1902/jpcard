@@ -22,7 +22,7 @@ export default function DecksPage() {
   }, []);
 
   return (
-    <Layout pageTitle="Decks" subtitle="Organize your learning">
+    <Layout pageTitle="Decks">
       <div className="glass-card" style={{ marginBottom: 20 }}>
         <div className="card-header">
            <h2 className="card-title">My Decks</h2>

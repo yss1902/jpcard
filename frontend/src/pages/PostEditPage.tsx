@@ -36,9 +36,9 @@ export default function PostEditPage() {
   };
 
   return (
-    <Layout pageTitle="Edit Post" subtitle="게시글 수정">
+    <Layout pageTitle="Edit Post">
       <section className="glass-card">
-        <h2 className="card-title">게시글 수정</h2>
+        <h2 className="card-title">Edit Post</h2>
         {status && <p className="muted">{status}</p>}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>

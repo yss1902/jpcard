@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
+import { Link, useNavigate } from "react-router-dom";
+import SuccessModal from "../components/SuccessModal";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const onLogin = async () => {
     try {
@@ -13,7 +17,8 @@ export default function LoginPage() {
       const { accessToken, refreshToken } = res.data;
       localStorage.setItem("token", accessToken);
       if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-      setStatus("로그인 성공! 새 액세스 토큰을 저장했습니다.");
+      setShowSuccess(true);
+      setTimeout(() => navigate("/"), 1500); // Auto redirect
     } catch (err) {
       console.error(err);
       setStatus("로그인에 실패했습니다. 입력값을 확인하세요.");
@@ -21,16 +26,15 @@ export default function LoginPage() {
   };
 
   return (
-    <Layout
-      pageTitle="Login"
-      subtitle="액세스 · 리프레시 토큰을 저장하여 API와 연결합니다"
-    >
+    <Layout pageTitle="Login">
+      <SuccessModal
+        isOpen={showSuccess}
+        message="Login Successful!"
+        onClose={() => navigate("/")}
+      />
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <p className="muted">Secure Session</p>
-            <h2 className="card-title">아이디와 비밀번호를 입력하세요</h2>
-          </div>
+          <h2 className="card-title">Login</h2>
           <button className="secondary-btn" onClick={() => setId("demo")}>빠른 입력</button>
         </div>
         <div className="form-grid">
@@ -56,9 +60,13 @@ export default function LoginPage() {
             />
           </div>
           <button className="primary-btn" onClick={onLogin}>
-            로그인 및 토큰 저장
+            로그인
           </button>
           {status && <p className="muted">{status}</p>}
+
+          <div style={{ marginTop: 20, textAlign: 'center', fontSize: '0.9rem' }}>
+             <p className="muted">If you don't have an account, <Link to="/register" style={{ textDecoration: 'underline', color: 'white' }}>click here to sign up</Link></p>
+          </div>
         </div>
       </section>
     </Layout>

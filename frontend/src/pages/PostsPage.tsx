@@ -23,12 +23,10 @@ export default function PostsPage() {
   }, [query]);
 
   return (
-    <Layout pageTitle="Posts" subtitle="Community updates">
+    <Layout pageTitle="Posts">
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <h2 className="card-title">Posts</h2>
-          </div>
+          <h2 className="card-title">Posts</h2>
           <Link to="/posts/create" className="primary-btn">
             New Post
           </Link>

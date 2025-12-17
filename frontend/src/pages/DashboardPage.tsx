@@ -28,7 +28,7 @@ export default function DashboardPage() {
   const memorizedPercent = stats.totalCards > 0 ? Math.round((stats.memorizedCards / stats.totalCards) * 100) : 0;
 
   return (
-    <Layout pageTitle="Dashboard" subtitle="Your learning progress at a glance">
+    <Layout pageTitle="Dashboard">
       <div className="glass-card" style={{ marginBottom: 20 }}>
          <h2 className="card-title">Progress Overview</h2>
 

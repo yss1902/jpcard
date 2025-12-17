@@ -52,9 +52,9 @@ export default function CardEditPage() {
   };
 
   return (
-    <Layout pageTitle="Edit Card" subtitle="카드 내용 수정">
+    <Layout pageTitle="Edit Card">
       <section className="glass-card">
-        <h2 className="card-title">카드 수정</h2>
+        <h2 className="card-title">Edit Card</h2>
         {status && <p className="muted">{status}</p>}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>

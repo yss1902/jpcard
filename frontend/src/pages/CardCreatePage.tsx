@@ -35,15 +35,12 @@ export default function CardCreatePage() {
   };
 
   return (
-    <Layout pageTitle="Create Card" subtitle="단어와 의미를 모노톤 카드로 추가합니다">
+    <Layout pageTitle="Create Card">
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <p className="muted">Flash Card Composer</p>
-            <h2 className="card-title">새로운 카드 만들기</h2>
-          </div>
+          <h2 className="card-title">Create Card</h2>
           <button className="secondary-btn" onClick={() => { setTerm(""); setMeaning(""); }}>
-            내용 지우기
+            Clear
           </button>
         </div>
         <form onSubmit={onCreate} className="form-grid">

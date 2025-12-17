@@ -17,7 +17,6 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
     { to: "/decks", label: "Decks" },
     { to: "/study", label: "Study" },
     { to: "/posts", label: "Posts" },
-    { to: "/register", label: "Sign Up" },
     { to: "/user", label: "My Page" },
     { to: "/login", label: "Login" },
   ];
