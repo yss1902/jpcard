@@ -15,6 +15,11 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional(readOnly = true)
+    public List<Post> search(String keyword) {
+        return postRepository.search(keyword);
+    }
+
+    @Transactional(readOnly = true)
     public List<Post> findAll() {
         return postRepository.findAll();
     }
@@ -44,5 +49,12 @@ public class PostService {
     @Transactional
     public void delete(Long id) {
         postRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Post likePost(Long id) {
+        Post post = findById(id);
+        post.setLikeCount(post.getLikeCount() + 1);
+        return post; // Updated post is returned, Transactional will save it.
     }
 }

@@ -13,7 +13,7 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
 
   const links = [
     { to: "/", label: "Home" },
-    { to: "/cards", label: "Cards" },
+    { to: "/decks", label: "Decks" },
     { to: "/study", label: "Study" },
     { to: "/posts", label: "Posts" },
     { to: "/register", label: "Sign Up" },
