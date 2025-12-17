@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../libs/api";
+import { speak } from "../libs/tts";
 import Layout from "../components/Layout";
 import { Link } from "react-router-dom";
 import type { Card } from "../types/card";
@@ -94,7 +95,10 @@ export default function CardsPage() {
             <article key={c.id} className="item-tile">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
                 <div>
-                  <h3 className="item-title">{c.term}</h3>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                     <h3 className="item-title">{c.term}</h3>
+                     <button className="icon-btn" onClick={() => speak(c.term)} style={{ fontSize: "0.8rem", padding: "2px 6px" }}>🔊</button>
+                  </div>
                   <p className="item-subtitle">{c.meaning}</p>
                   {c.isMemorized && <span className="pill" style={{marginTop: 5, fontSize: '0.7rem'}}>Memorized</span>}
                 </div>
