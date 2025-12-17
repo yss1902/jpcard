@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
+import { useNavigate } from "react-router-dom";
+import SuccessModal from "../components/SuccessModal";
 
 export default function PostCreatePage() {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const onCreate = async () => {
     try {
       await api.post("/posts", { title, content });
-      setStatus("게시글을 발행했습니다. 목록에서 확인하세요!");
-      setTitle("");
-      setContent("");
+      setShowSuccess(true);
+      setTimeout(() => navigate("/posts"), 1500);
     } catch (err) {
       console.error(err);
       setStatus("게시글 작성 실패. API 연결 상태를 확인하세요.");
@@ -20,15 +23,17 @@ export default function PostCreatePage() {
   };
 
   return (
-    <Layout pageTitle="Write Post" subtitle="담백한 흑백 카드에 이야기를 남기세요">
+    <Layout pageTitle="Write Post">
+      <SuccessModal
+        isOpen={showSuccess}
+        message="Post Published!"
+        onClose={() => navigate("/posts")}
+      />
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <p className="muted">Community Note</p>
-            <h2 className="card-title">새 글 작성</h2>
-          </div>
+          <h2 className="card-title">New Post</h2>
           <button className="secondary-btn" onClick={() => { setTitle(""); setContent(""); }}>
-            비우기
+            Clear
           </button>
         </div>
         <div className="form-grid">

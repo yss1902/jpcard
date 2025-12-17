@@ -25,12 +25,10 @@ export default function DeckDetailPage() {
   if (!deck) return <Layout><p className="muted">Loading deck...</p></Layout>;
 
   return (
-    <Layout pageTitle={deck.name} subtitle={deck.description}>
+    <Layout pageTitle={deck.name}>
       <section className="glass-card">
         <div className="card-header">
-          <div>
-             <h2 className="card-title">Cards in Deck</h2>
-          </div>
+          <h2 className="card-title">Cards in Deck</h2>
           <Link to={`/cards/create?deckId=${id}`} className="primary-btn">
             Add Card to Deck
           </Link>

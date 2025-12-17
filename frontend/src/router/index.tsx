@@ -14,6 +14,7 @@ import PostEditPage from "../pages/PostEditPage";
 import PostDetailPage from "../pages/PostDetailPage";
 import UserPage from "../pages/UserPage";
 import HomePage from "../pages/HomePage";
+import DashboardPage from "../pages/DashboardPage";
 import ErrorPage from "../components/ErrorPage";
 
 export const router = createBrowserRouter([
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
+      { path: "dashboard", element: <DashboardPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
       { path: "cards", element: <CardsPage /> },

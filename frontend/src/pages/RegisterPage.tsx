@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
+import { useNavigate } from "react-router-dom";
+import SuccessModal from "../components/SuccessModal";
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const onRegister = async () => {
     try {
@@ -13,7 +17,8 @@ export default function RegisterPage() {
         username: id,
         password: pw,
       });
-      setMessage("가입 완료! 이제 로그인하세요.");
+      setShowSuccess(true);
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       console.error(err);
       setMessage("가입에 실패했습니다. 다시 시도해주세요.");
@@ -21,16 +26,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <Layout pageTitle="Sign Up" subtitle="간결한 흑백 톤의 신규 회원 등록 양식">
+    <Layout pageTitle="Sign Up">
+      <SuccessModal
+        isOpen={showSuccess}
+        message="Sign Up Successful!"
+        onClose={() => navigate("/login")}
+      />
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <p className="muted">Create account</p>
-            <h2 className="card-title">새로운 ID를 발급하세요</h2>
-          </div>
-          <span className="pill">
-            <span className="pill-dot" /> Secure by default
-          </span>
+          <h2 className="card-title">Create Account</h2>
         </div>
 
         <div className="form-grid">

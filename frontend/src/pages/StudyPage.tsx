@@ -88,7 +88,7 @@ export default function StudyPage() {
   }
 
   return (
-    <Layout pageTitle="Study Mode" subtitle="Flip cards and test your memory">
+    <Layout pageTitle="Study Mode">
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
          <label className="muted" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.9rem" }}>
             <input type="checkbox" checked={!showAll} onChange={() => { setShowAll(!showAll); setCurrentIndex(0); setIsFlipped(false); }} />
