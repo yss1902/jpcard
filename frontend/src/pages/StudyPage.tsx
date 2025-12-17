@@ -3,33 +3,28 @@ import { api } from "../libs/api";
 import { speak } from "../libs/tts";
 import Layout from "../components/Layout";
 import type { Card } from "../types/card";
+import { useSearchParams } from "react-router-dom";
 import "../App.css"; // Ensure CSS is available
 
 export default function StudyPage() {
+  const [searchParams] = useSearchParams();
+  const deckId = searchParams.get("deckId");
+
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showAll, setShowAll] = useState(true); // Toggle between "All" and "Pending"
 
   useEffect(() => {
     fetchCards();
-  }, []);
-
-  const filteredCards = showAll ? cards : cards.filter((c) => !c.isMemorized);
-  const currentCard = filteredCards[currentIndex];
-
-  // Fix: Clamp currentIndex if it goes out of bounds when list shrinks
-  useEffect(() => {
-    if (filteredCards.length > 0 && currentIndex >= filteredCards.length) {
-      setCurrentIndex(Math.max(0, filteredCards.length - 1));
-    }
-  }, [filteredCards.length, currentIndex]);
+  }, [deckId]);
 
   const fetchCards = () => {
     setLoading(true);
+    const endpoint = deckId ? `/study/due?deckId=${deckId}` : "/cards";
+
     api
-      .get<Card[]>("/cards")
+      .get<Card[]>(endpoint)
       .then((res) => {
         setCards(res.data);
       })
@@ -37,51 +32,34 @@ export default function StudyPage() {
       .finally(() => setLoading(false));
   };
 
-  const handleNext = () => {
-    setIsFlipped(false);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % filteredCards.length);
-    }, 200);
-  };
+  const currentCard = cards[currentIndex];
 
-  const handlePrev = () => {
-    setIsFlipped(false);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
-    }, 200);
-  };
-
-  const toggleMemorized = async () => {
+  const handleReview = async (rating: string) => {
     if (!currentCard) return;
-    const newStatus = !currentCard.isMemorized;
     try {
-      // PATCH expects boolean body, usually JSON or text.
-      // Spring @RequestBody boolean often requires "true" or "false" as raw body with Content-Type application/json
-      await api.patch(`/cards/${currentCard.id}/memorized`, newStatus, {
-        headers: { "Content-Type": "application/json" }
-      });
-
-      // Update local state
-      const updatedCards = cards.map(c => c.id === currentCard.id ? { ...c, isMemorized: newStatus } : c);
-      setCards(updatedCards);
+        await api.post("/study/review", { cardId: currentCard.id, rating });
+        // Move to next card
+        setIsFlipped(false);
+        if (currentIndex < cards.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+        } else {
+            // Refetch to see if more due
+            fetchCards();
+            setCurrentIndex(0);
+        }
     } catch (err) {
-      console.error("Failed to toggle status", err);
+        console.error(err);
     }
   };
 
   if (loading) return <Layout pageTitle="Study Mode"><p className="muted">Loading cards...</p></Layout>;
 
-  if (filteredCards.length === 0) {
+  if (cards.length === 0) {
     return (
       <Layout pageTitle="Study Mode">
          <section className="glass-card" style={{ textAlign: "center", padding: "40px 20px" }}>
-            <h2 className="card-title">No cards to study!</h2>
-            <p className="muted">{showAll ? "Create some cards first." : "All cards are memorized! Good job."}</p>
-            {!showAll && (
-              <button className="primary-btn" onClick={() => setShowAll(true)} style={{ marginTop: 20 }}>
-                Review All Cards
-              </button>
-            )}
+            <h2 className="card-title">All caught up!</h2>
+            <p className="muted">No cards due for review right now.</p>
          </section>
       </Layout>
     );
@@ -89,13 +67,6 @@ export default function StudyPage() {
 
   return (
     <Layout pageTitle="Study Mode">
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
-         <label className="muted" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.9rem" }}>
-            <input type="checkbox" checked={!showAll} onChange={() => { setShowAll(!showAll); setCurrentIndex(0); setIsFlipped(false); }} />
-            Hide Memorized
-         </label>
-      </div>
-
       <div className="study-container">
         <div
           className={`flash-card ${isFlipped ? "flipped" : ""}`}
@@ -126,25 +97,29 @@ export default function StudyPage() {
           </div>
         </div>
 
-        <div className="controls">
-           <button className="nav-btn" onClick={handlePrev}>&larr; Prev</button>
-           <div className="status-display">
-              {currentIndex + 1} / {filteredCards.length}
-           </div>
-           <button className="nav-btn" onClick={handleNext}>Next &rarr;</button>
-        </div>
-
-        <div className="action-row">
-           <button
-             className={`memorize-btn ${currentCard.isMemorized ? "active" : ""}`}
-             onClick={(e) => { e.stopPropagation(); toggleMemorized(); }}
-           >
-             {currentCard.isMemorized ? "Mark as Forgotten" : "Mark as Memorized"}
-           </button>
-        </div>
+        {!isFlipped ? (
+            <div className="controls" style={{ marginTop: 20 }}>
+               <p className="muted">Tap card to see meaning</p>
+            </div>
+        ) : (
+            <div className="action-row" style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+               <button className="nav-btn" style={{ borderColor: '#ff4d4f', color: '#ff4d4f' }} onClick={() => handleReview("FAIL")}>
+                 Again (&lt;1m)
+               </button>
+               <button className="nav-btn" style={{ borderColor: '#faad14', color: '#faad14' }} onClick={() => handleReview("HARD")}>
+                 Hard (12h)
+               </button>
+               <button className="nav-btn" style={{ borderColor: '#52c41a', color: '#52c41a' }} onClick={() => handleReview("GOOD")}>
+                 Good (1d)
+               </button>
+               <button className="nav-btn" style={{ borderColor: '#1890ff', color: '#1890ff' }} onClick={() => handleReview("EASY")}>
+                 Easy (4d)
+               </button>
+            </div>
+        )}
       </div>
 
-      {/* Inline Styles for this page specifically, or add to App.css */}
+      {/* Inline Styles */}
       <style>{`
         .study-container {
           display: flex;
@@ -221,30 +196,6 @@ export default function StudyPage() {
         }
         .nav-btn:hover {
           background: rgba(255,255,255,0.1);
-        }
-        .status-display {
-          color: rgba(255,255,255,0.6);
-          font-variant-numeric: tabular-nums;
-        }
-        .memorize-btn {
-           background: rgba(255, 255, 255, 0.05);
-           border: 1px solid rgba(255, 255, 255, 0.2);
-           color: #aaa;
-           padding: 10px 24px;
-           border-radius: 8px;
-           cursor: pointer;
-           font-size: 0.9rem;
-           transition: all 0.3s;
-        }
-        .memorize-btn:hover {
-           background: rgba(255, 255, 255, 0.1);
-           color: white;
-        }
-        .memorize-btn.active {
-           background: #fff;
-           color: #000;
-           border-color: #fff;
-           font-weight: 600;
         }
       `}</style>
     </Layout>
