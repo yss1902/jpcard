@@ -30,63 +30,90 @@ export default function CardCreatePage() {
       }
     } catch (err) {
       console.error(err);
-      setStatus("카드 생성 실패. API 연결을 다시 확인해주세요.");
+      setStatus("Failed to create card.");
     }
   };
 
   return (
     <Layout pageTitle="Create Card">
-      <section className="glass-card">
-        <div className="card-header">
-          <h2 className="card-title">Create Card</h2>
-          <button className="secondary-btn" onClick={() => { setTerm(""); setMeaning(""); }}>
-            Clear
-          </button>
-        </div>
-        <form onSubmit={onCreate} className="form-grid">
-          <div className="input-field">
-            <label htmlFor="card-term">용어</label>
-            <input
-              id="card-term"
-              className="text-input"
-              placeholder="예: サンプル / sample"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              required
-            />
+      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+        <section className="glass-card" style={{ padding: 40 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
+             <h2 className="card-title" style={{ margin: 0 }}>New Flash Card</h2>
+             <button className="secondary-btn" onClick={() => { setTerm(""); setMeaning(""); }} style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
+               Clear
+             </button>
           </div>
-          <div className="input-field">
-            <label htmlFor="card-meaning">뜻/메모</label>
-            <input
-              id="card-meaning"
-              className="text-input"
-              placeholder="간단한 뜻을 입력"
-              value={meaning}
-              onChange={(e) => setMeaning(e.target.value)}
-              required
-            />
-          </div>
-          <div className="input-field">
-             <label htmlFor="card-deck">Deck (Optional)</label>
-             <select
-               id="card-deck"
-               className="text-input"
-               value={deckId}
-               onChange={e => setDeckId(e.target.value)}
-               style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-             >
-                <option value="">No Deck</option>
-                {decks.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-             </select>
-          </div>
-          <button type="submit" className="primary-btn">
-            카드 생성
-          </button>
-          {status && <p className="muted">{status}</p>}
-        </form>
-      </section>
+
+          <form onSubmit={onCreate} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="input-group">
+              <label htmlFor="card-term" className="input-label">Term / Word</label>
+              <input
+                id="card-term"
+                className="input-field"
+                placeholder="e.g., 勉強 (Study)"
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                required
+                style={{ padding: "12px 16px", fontSize: "1.1rem" }}
+              />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="card-meaning" className="input-label">Meaning / Definition</label>
+              <textarea
+                id="card-meaning"
+                className="input-field"
+                rows={3}
+                placeholder="e.g., The act of acquiring knowledge"
+                value={meaning}
+                onChange={(e) => setMeaning(e.target.value)}
+                required
+                style={{ resize: "vertical" }}
+              />
+            </div>
+
+            <div className="input-group">
+               <label htmlFor="card-deck" className="input-label">Assign to Deck</label>
+               <select
+                 id="card-deck"
+                 className="input-field"
+                 value={deckId}
+                 onChange={e => setDeckId(e.target.value)}
+                 style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: "12px 16px" }}
+               >
+                  <option value="">No Deck (Unassigned)</option>
+                  {decks.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+               </select>
+            </div>
+
+            <button type="submit" className="primary-btn" style={{ marginTop: 10, padding: "14px", fontSize: "1.1rem" }}>
+              Add Card
+            </button>
+            {status && <p className="muted" style={{ textAlign: "center" }}>{status}</p>}
+          </form>
+        </section>
+      </div>
+      <style>{`
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .input-label {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+        }
+        .input-field:focus {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
     </Layout>
   );
 }

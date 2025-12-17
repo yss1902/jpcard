@@ -64,8 +64,11 @@ export default function LoginPage() {
           </button>
           {status && <p className="muted">{status}</p>}
 
-          <div style={{ marginTop: 20, textAlign: 'center', fontSize: '0.9rem' }}>
-             <p className="muted">If you don't have an account, <Link to="/register" style={{ textDecoration: 'underline', color: 'white' }}>click here to sign up</Link></p>
+          <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+             <p className="muted" style={{ marginBottom: 10 }}>Don't have an account?</p>
+             <Link to="/register" className="secondary-btn" style={{ display: 'inline-block', width: '100%', textAlign: 'center', textDecoration: 'none' }}>
+                Create an Account
+             </Link>
           </div>
         </div>
       </section>
