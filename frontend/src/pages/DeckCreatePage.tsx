@@ -21,40 +21,64 @@ export default function DeckCreatePage() {
   };
 
   return (
-    <Layout pageTitle="Create Deck" subtitle="New collection of cards">
-      <section className="glass-card">
-        <h2 className="card-title">New Deck</h2>
-        {status && <p className="muted">{status}</p>}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <label htmlFor="deck-name" style={{ display: "block", marginBottom: 4 }} className="muted">
-              Name
-            </label>
-            <input
-              id="deck-name"
-              className="input-field"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="deck-desc" style={{ display: "block", marginBottom: 4 }} className="muted">
-              Description
-            </label>
-            <textarea
-              id="deck-desc"
-              className="input-field"
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <button type="submit" className="primary-btn" style={{ marginTop: 8 }}>
-            Create Deck
-          </button>
-        </form>
-      </section>
+    <Layout pageTitle="Create Deck">
+      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+        <section className="glass-card" style={{ padding: 40 }}>
+          <h2 className="card-title" style={{ textAlign: "center", marginBottom: 30 }}>Design Your Deck</h2>
+          {status && <p className="muted" style={{ textAlign: "center" }}>{status}</p>}
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="input-group">
+              <label htmlFor="deck-name" className="input-label">
+                Deck Name
+              </label>
+              <input
+                id="deck-name"
+                className="input-field"
+                placeholder="e.g., JLPT N5 Vocabulary"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                style={{ padding: "12px 16px", fontSize: "1.1rem" }}
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="deck-desc" className="input-label">
+                Description <span className="muted">(Optional)</span>
+              </label>
+              <textarea
+                id="deck-desc"
+                className="input-field"
+                rows={4}
+                placeholder="What is this deck about?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{ resize: "vertical" }}
+              />
+            </div>
+            <button type="submit" className="primary-btn" style={{ marginTop: 10, padding: "14px", fontSize: "1.1rem" }}>
+              Create Deck
+            </button>
+          </form>
+        </section>
+      </div>
+      <style>{`
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .input-label {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+        }
+        .input-field:focus {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
     </Layout>
   );
 }

@@ -57,12 +57,10 @@ export default function CardsPage() {
   }, [query, filterType]);
 
   return (
-    <Layout pageTitle="Flash Cards" subtitle="Browse and manage your vocabulary">
+    <Layout pageTitle="Flash Cards">
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <h2 className="card-title">All Cards</h2>
-          </div>
+          <h2 className="card-title">All Cards</h2>
           <Link to="/cards/create" className="primary-btn">
             New Card
           </Link>

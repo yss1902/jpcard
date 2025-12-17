@@ -2,34 +2,39 @@ import { useEffect, useState } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import type { User } from "../types/user";
+import { useNavigate } from "react-router-dom";
 
 export default function UserPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [status, setStatus] = useState("내 정보를 불러오는 중...");
+  const [status, setStatus] = useState("Loading profile...");
 
   useEffect(() => {
     api
       .get<User>("/users/me")
       .then((res) => {
         setUser(res.data);
-        setStatus("성공적으로 불러왔습니다.");
+        setStatus("");
       })
-      .catch(() => setStatus("사용자 정보를 불러올 수 없습니다. 로그인 상태를 확인하세요."));
+      .catch(() => setStatus("Could not load profile. Please login."));
   }, []);
 
+  const onLogout = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      navigate("/login");
+  };
+
   return (
-    <Layout pageTitle="My Page" subtitle="토큰 기반으로 백엔드에서 불러온 사용자 정보">
+    <Layout pageTitle="My Page">
       <section className="glass-card">
         <div className="card-header">
-          <div>
-            <p className="muted">Profile</p>
-            <h2 className="card-title">내 계정</h2>
-          </div>
-          <span className="pill">
-            <span className="pill-dot" /> JWT 보호됨
-          </span>
+          <h2 className="card-title">My Account</h2>
+          <button className="secondary-btn" onClick={onLogout}>Logout</button>
         </div>
-        <p className="muted">{status}</p>
+
+        {status && <p className="muted">{status}</p>}
+
         {user && (
           <div className="form-grid" style={{ marginTop: 12 }}>
             <div className="action-card">
@@ -46,13 +51,6 @@ export default function UserPage() {
                   </span>
                 ))}
               </div>
-            </div>
-            <div className="action-card">
-              <p className="muted">저장된 토큰</p>
-              <p className="item-subtitle">
-                accessToken: {localStorage.getItem("token") ? "있음" : "없음"} · refreshToken: {" "}
-                {localStorage.getItem("refreshToken") ? "있음" : "없음"}
-              </p>
             </div>
           </div>
         )}

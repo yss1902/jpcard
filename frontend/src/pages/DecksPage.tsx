@@ -22,11 +22,14 @@ export default function DecksPage() {
   }, []);
 
   return (
-    <Layout pageTitle="Decks" subtitle="Organize your learning">
+    <Layout pageTitle="Decks">
       <div className="glass-card" style={{ marginBottom: 20 }}>
         <div className="card-header">
            <h2 className="card-title">My Decks</h2>
-           <Link to="/decks/create" className="primary-btn">Create Deck</Link>
+           <div style={{ display: 'flex', gap: 10 }}>
+             <Link to="/cards/create" className="secondary-btn">New Card</Link>
+             <Link to="/decks/create" className="primary-btn">Create Deck</Link>
+           </div>
         </div>
         <p className="muted">{status}</p>
 

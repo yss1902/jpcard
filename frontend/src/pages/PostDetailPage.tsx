@@ -54,7 +54,7 @@ export default function PostDetailPage() {
   if (!post) return <Layout pageTitle="Not Found"><p>Post not found.</p></Layout>;
 
   return (
-    <Layout pageTitle={post.title} subtitle="Post Detail">
+    <Layout pageTitle={post.title}>
       <section className="glass-card">
         <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6, marginBottom: 20 }}>
            {post.content}
