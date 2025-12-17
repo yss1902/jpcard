@@ -50,11 +50,27 @@ export default function PostsPage() {
           {posts.map((p) => (
             <article key={p.id} className="item-tile">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                <div>
-                  <h3 className="item-title">{p.title}</h3>
+                <div style={{ flex: 1 }}>
+                  <Link to={`/posts/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <h3 className="item-title">{p.title}</h3>
+                  </Link>
                   <p className="item-subtitle" style={{ whiteSpace: "pre-wrap" }}>
                     {p.content}
                   </p>
+                  <div style={{ marginTop: 8, display: 'flex', gap: 10, fontSize: '0.85rem', alignItems: 'center' }} className="muted">
+                     <button
+                       className="secondary-btn"
+                       style={{ padding: "4px 8px", fontSize: "0.8rem" }}
+                       onClick={() => {
+                          api.post(`/posts/${p.id}/like`).then(res => {
+                             setPosts(posts.map(post => post.id === p.id ? res.data : post));
+                          }).catch(console.error);
+                       }}
+                     >
+                       ♥ {p.likeCount}
+                     </button>
+                     <Link to={`/posts/${p.id}`} className="muted" style={{ textDecoration: 'underline' }}>View Comments</Link>
+                  </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link to={`/posts/${p.id}/edit`} className="muted" style={{ fontSize: "0.8rem", textDecoration: "underline" }}>

@@ -11,6 +11,7 @@ import StudyPage from "../pages/StudyPage";
 import PostsPage from "../pages/PostsPage";
 import PostCreatePage from "../pages/PostCreatePage";
 import PostEditPage from "../pages/PostEditPage";
+import PostDetailPage from "../pages/PostDetailPage";
 import UserPage from "../pages/UserPage";
 import HomePage from "../pages/HomePage";
 import ErrorPage from "../components/ErrorPage";
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "posts", element: <PostsPage /> },
       { path: "posts/create", element: <PostCreatePage /> },
       { path: "posts/:id/edit", element: <PostEditPage /> },
+      { path: "posts/:id", element: <PostDetailPage /> },
       { path: "user", element: <UserPage /> },
     ],
   },

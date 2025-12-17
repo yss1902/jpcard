@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../libs/api";
+import { speak } from "../libs/tts";
 import Layout from "../components/Layout";
 import type { Card } from "../types/card";
 import "../App.css"; // Ensure CSS is available
@@ -103,11 +104,25 @@ export default function StudyPage() {
           <div className="card-face card-front">
             <span className="card-label">TERM</span>
             <h2>{currentCard.term}</h2>
+            <button
+              className="icon-btn"
+              onClick={(e) => { e.stopPropagation(); speak(currentCard.term); }}
+              style={{ position: 'absolute', top: 16, right: 16 }}
+            >
+              🔊
+            </button>
             <p className="click-hint">Click to flip</p>
           </div>
           <div className="card-face card-back">
             <span className="card-label">MEANING</span>
             <h2>{currentCard.meaning}</h2>
+            <button
+              className="icon-btn"
+              onClick={(e) => { e.stopPropagation(); speak(currentCard.meaning, "en-US"); }}
+              style={{ position: 'absolute', top: 16, right: 16 }}
+            >
+              🔊
+            </button>
           </div>
         </div>
 
