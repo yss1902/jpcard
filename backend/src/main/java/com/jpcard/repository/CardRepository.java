@@ -16,4 +16,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     List<Card> search(@Param("deckId") Long deckId,
                       @Param("memorized") Boolean memorized,
                       @Param("keyword") String keyword);
+
+    @Query("SELECT c FROM Card c WHERE c.deck.id = :deckId AND c.id NOT IN (SELECT p.card.id FROM UserCardProgress p WHERE p.user.id = :userId)")
+    List<Card> findNewCards(@Param("deckId") Long deckId, @Param("userId") Long userId);
 }
