@@ -4,41 +4,57 @@ import Layout from "../components/Layout";
 import { useParams, useNavigate } from "react-router-dom";
 import type { Card } from "../types/card";
 import type { Deck } from "../types/deck";
+import type { CardTemplate, FieldDefinition } from "../types/template";
 
 export default function CardEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [term, setTerm] = useState("");
   const [meaning, setMeaning] = useState("");
   const [deckId, setDeckId] = useState<string>("");
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [templates, setTemplates] = useState<CardTemplate[]>([]);
+  const [fields, setFields] = useState<Record<string, string>>({});
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    // Fetch Decks
     api.get<Deck[]>("/decks").then(res => setDecks(res.data)).catch(console.error);
+    api.get<CardTemplate[]>("/templates").then(res => setTemplates(res.data)).catch(console.error);
 
-    // Fetch Card
     api
       .get<Card>(`/cards/${id}`)
       .then((res) => {
         setTerm(res.data.term);
         setMeaning(res.data.meaning);
         setDeckId(res.data.deckId ? String(res.data.deckId) : "");
+        if (res.data.fields) setFields(res.data.fields);
       })
       .catch((err) => {
         console.error(err);
-        setStatus("카드를 찾을 수 없습니다.");
+        setStatus("Card not found.");
       });
   }, [id]);
+
+  // Determine current template fields
+  const selectedDeck = decks.find(d => String(d.id) === deckId);
+  const currentTemplate = selectedDeck && templates.find(t => t.id === selectedDeck.templateId);
+
+  const templateFields: FieldDefinition[] = currentTemplate
+      ? JSON.parse(currentTemplate.structureJson)
+      : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payloadTerm = templateFields.length > 0 ? (fields["term"] || "") : term;
+      const payloadMeaning = templateFields.length > 0 ? (fields["meaning"] || "") : meaning;
+
       await api.put(`/cards/${id}`, {
-          term,
-          meaning,
-          deckId: deckId ? Number(deckId) : null
+          term: payloadTerm,
+          meaning: payloadMeaning,
+          deckId: deckId ? Number(deckId) : null,
+          fields: fields
       });
       if (deckId) {
           navigate(`/decks/${deckId}`);
@@ -47,7 +63,7 @@ export default function CardEditPage() {
       }
     } catch (err) {
       console.error(err);
-      setStatus("수정에 실패했습니다.");
+      setStatus("Update failed.");
     }
   };
 
@@ -56,42 +72,16 @@ export default function CardEditPage() {
       <section className="glass-card">
         <h2 className="card-title">Edit Card</h2>
         {status && <p className="muted">{status}</p>}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <label htmlFor="card-term" style={{ display: "block", marginBottom: 4 }} className="muted">
-              단어 (Term)
-            </label>
-            <input
-              id="card-term"
-              className="input-field"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="card-meaning" style={{ display: "block", marginBottom: 4 }} className="muted">
-              의미 (Meaning)
-            </label>
-            <textarea
-              id="card-meaning"
-              className="input-field"
-              rows={3}
-              value={meaning}
-              onChange={(e) => setMeaning(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-             <label htmlFor="card-deck" style={{ display: "block", marginBottom: 4 }} className="muted">
-                Deck (Optional)
-             </label>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+          <div className="input-group">
+             <label htmlFor="card-deck" className="input-label">Deck</label>
              <select
                id="card-deck"
                className="input-field"
                value={deckId}
                onChange={e => setDeckId(e.target.value)}
-               style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+               style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: "12px 16px" }}
              >
                 <option value="">No Deck</option>
                 {decks.map(d => (
@@ -99,10 +89,84 @@ export default function CardEditPage() {
                 ))}
              </select>
           </div>
-          <button type="submit" className="primary-btn" style={{ marginTop: 8 }}>
-            수정 완료
+
+          {templateFields.length > 0 ? (
+                // Dynamic Fields
+                templateFields.map(field => (
+                    <div className="input-group" key={field.key}>
+                      <label htmlFor={`field-${field.key}`} className="input-label">{field.label}</label>
+                      {field.key === 'meaning' || field.key === 'note' ? (
+                          <textarea
+                            id={`field-${field.key}`}
+                            className="input-field"
+                            rows={3}
+                            value={fields[field.key] || ""}
+                            onChange={(e) => setFields({...fields, [field.key]: e.target.value})}
+                            style={{ resize: "vertical" }}
+                          />
+                      ) : (
+                          <input
+                            id={`field-${field.key}`}
+                            className="input-field"
+                            value={fields[field.key] || ""}
+                            onChange={(e) => setFields({...fields, [field.key]: e.target.value})}
+                            style={{ padding: "12px 16px", fontSize: "1.1rem" }}
+                          />
+                      )}
+                    </div>
+                ))
+            ) : (
+                // Fallback
+                <>
+                  <div className="input-group">
+                    <label htmlFor="card-term" className="input-label">Term / Word</label>
+                    <input
+                      id="card-term"
+                      className="input-field"
+                      value={term}
+                      onChange={(e) => setTerm(e.target.value)}
+                      required
+                      style={{ padding: "12px 16px", fontSize: "1.1rem" }}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label htmlFor="card-meaning" className="input-label">Meaning / Definition</label>
+                    <textarea
+                      id="card-meaning"
+                      className="input-field"
+                      rows={3}
+                      value={meaning}
+                      onChange={(e) => setMeaning(e.target.value)}
+                      required
+                      style={{ resize: "vertical" }}
+                    />
+                  </div>
+                </>
+            )}
+
+          <button type="submit" className="primary-btn" style={{ marginTop: 8, padding: "14px", fontSize: "1.1rem" }}>
+            Save Changes
           </button>
         </form>
+
+        <style>{`
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .input-label {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+        }
+        .input-field:focus {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
       </section>
     </Layout>
   );

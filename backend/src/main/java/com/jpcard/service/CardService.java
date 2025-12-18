@@ -5,17 +5,23 @@ import com.jpcard.domain.deck.Deck;
 import com.jpcard.repository.CardRepository;
 import com.jpcard.repository.DeckRepository;
 import com.jpcard.util.ResourceNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class CardService {
 
     private final CardRepository cardRepository;
+    private final ObjectMapper objectMapper;
     private final DeckRepository deckRepository;
 
     @Transactional(readOnly = true)
@@ -34,10 +40,19 @@ public class CardService {
     }
 
     @Transactional
-    public Card create(String term, String meaning, Long deckId) {
+    public Card create(String term, String meaning, Long deckId, Map<String, String> fields) {
         Card card = new Card();
         card.setTerm(term);
         card.setMeaning(meaning);
+
+        if (fields != null) {
+            try {
+                card.setContentJson(objectMapper.writeValueAsString(fields));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Failed to serialize card fields", e);
+            }
+        }
+
         if (deckId != null) {
             Deck deck = deckRepository.findById(deckId)
                     .orElseThrow(() -> new ResourceNotFoundException("Deck not found with id: " + deckId));
@@ -46,10 +61,9 @@ public class CardService {
         return cardRepository.save(card);
     }
 
-    // Overload for backward compatibility if needed, or just replace usage
     @Transactional
     public Card create(String term, String meaning) {
-        return create(term, meaning, null);
+        return create(term, meaning, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -59,29 +73,44 @@ public class CardService {
     }
 
     @Transactional
-    public Card update(Long id, String term, String meaning, Long deckId) {
+    public Card update(Long id, String term, String meaning, Long deckId, Map<String, String> fields) {
         Card card = findById(id);
         card.setTerm(term);
         card.setMeaning(meaning);
+
+        if (fields != null) {
+            try {
+                card.setContentJson(objectMapper.writeValueAsString(fields));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Failed to serialize card fields", e);
+            }
+        }
+
         if (deckId != null) {
             Deck deck = deckRepository.findById(deckId)
                     .orElseThrow(() -> new ResourceNotFoundException("Deck not found with id: " + deckId));
             card.setDeck(deck);
         } else {
-            card.setDeck(null); // Optional: allow unassigning
+            card.setDeck(null);
         }
         return card;
     }
 
     @Transactional
     public Card update(Long id, String term, String meaning) {
-        // Preserve existing deck if not specified? Or clear it?
-        // For "Edit Card" page, we usually send all data.
-        // If I keep this old method, I should probably not touch the deck.
         Card card = findById(id);
         card.setTerm(term);
         card.setMeaning(meaning);
         return card;
+    }
+
+    public Map<String, String> parseContent(String json) {
+        if (json == null || json.isEmpty()) return Collections.emptyMap();
+        try {
+            return objectMapper.readValue(json, new TypeReference<Map<String, String>>() {});
+        } catch (JsonProcessingException e) {
+            return Collections.emptyMap();
+        }
     }
 
     @Transactional

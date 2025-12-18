@@ -35,7 +35,7 @@ public class CardController {
 
         List<Card> cards = cardService.search(deckId, memorized, q);
         List<CardResponse> responses = cards.stream()
-                .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null))
+                .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null, cardService.parseContent(card.getContentJson())))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -43,25 +43,25 @@ public class CardController {
     @GetMapping("/{id}")
     public ResponseEntity<CardResponse> get(@PathVariable Long id) {
         var card = cardService.findById(id);
-        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null));
+        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null, cardService.parseContent(card.getContentJson())));
     }
 
     @PostMapping
     public ResponseEntity<CardResponse> create(@RequestBody CardRequest request) {
-        var card = cardService.create(request.term(), request.meaning(), request.deckId());
-        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null));
+        var card = cardService.create(request.term(), request.meaning(), request.deckId(), request.fields());
+        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null, cardService.parseContent(card.getContentJson())));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CardResponse> update(@PathVariable Long id, @RequestBody CardRequest request) {
-        var card = cardService.update(id, request.term(), request.meaning(), request.deckId());
-        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null));
+        var card = cardService.update(id, request.term(), request.meaning(), request.deckId(), request.fields());
+        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null, cardService.parseContent(card.getContentJson())));
     }
 
     @PatchMapping("/{id}/memorized")
     public ResponseEntity<CardResponse> updateMemorizedStatus(@PathVariable Long id, @RequestBody boolean isMemorized) {
         var card = cardService.changeMemorizedStatus(id, isMemorized);
-        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null));
+        return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null, cardService.parseContent(card.getContentJson())));
     }
 
     @DeleteMapping("/{id}")

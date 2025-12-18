@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "decks")
+@Table(name = "card_templates")
 @Getter
 @Setter
-public class Deck {
+public class CardTemplate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,10 +17,6 @@ public class Deck {
     @Column(nullable = false)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id")
-    private CardTemplate template;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String structureJson; // JSON array of field definitions
 }

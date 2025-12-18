@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
+import type { CardTemplate } from "../types/template";
 
 export default function DeckCreatePage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [templateId, setTemplateId] = useState("");
+  const [templates, setTemplates] = useState<CardTemplate[]>([]);
   const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    api.get<CardTemplate[]>("/templates").then(res => {
+        setTemplates(res.data);
+        if (res.data.length > 0) setTemplateId(String(res.data[0].id));
+    }).catch(console.error);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/decks", { name, description });
+      await api.post("/decks", { name, description, templateId: Number(templateId) });
       navigate("/decks");
     } catch (err) {
       console.error(err);
@@ -40,6 +50,22 @@ export default function DeckCreatePage() {
                 required
                 style={{ padding: "12px 16px", fontSize: "1.1rem" }}
               />
+            </div>
+            <div className="input-group">
+              <label htmlFor="deck-template" className="input-label">
+                Card Type (Template)
+              </label>
+              <select
+                id="deck-template"
+                className="input-field"
+                value={templateId}
+                onChange={(e) => setTemplateId(e.target.value)}
+                style={{ padding: "12px 16px", fontSize: "1.1rem", background: 'rgba(255,255,255,0.05)', color: 'white' }}
+              >
+                {templates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
             </div>
             <div className="input-group">
               <label htmlFor="deck-desc" className="input-label">

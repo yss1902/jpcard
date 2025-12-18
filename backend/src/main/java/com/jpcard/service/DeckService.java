@@ -1,6 +1,8 @@
 package com.jpcard.service;
 
+import com.jpcard.domain.deck.CardTemplate;
 import com.jpcard.domain.deck.Deck;
+import com.jpcard.repository.CardTemplateRepository;
 import com.jpcard.repository.DeckRepository;
 import com.jpcard.util.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.List;
 public class DeckService {
 
     private final DeckRepository deckRepository;
+    private final CardTemplateRepository templateRepository;
 
     @Transactional(readOnly = true)
     public List<Deck> findAll() {
@@ -27,18 +30,32 @@ public class DeckService {
     }
 
     @Transactional
-    public Deck create(String name, String description) {
+    public Deck create(String name, String description, Long templateId) {
         Deck deck = new Deck();
         deck.setName(name);
         deck.setDescription(description);
+        if (templateId != null) {
+            CardTemplate template = templateRepository.findById(templateId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+            deck.setTemplate(template);
+        } else {
+            // Default to first template if none provided? Or leave null?
+            // Let's default to Type 1 (id 1) if available to avoid nulls
+            templateRepository.findById(1L).ifPresent(deck::setTemplate);
+        }
         return deckRepository.save(deck);
     }
 
     @Transactional
-    public Deck update(Long id, String name, String description) {
+    public Deck update(Long id, String name, String description, Long templateId) {
         Deck deck = findById(id);
         deck.setName(name);
         deck.setDescription(description);
+        if (templateId != null) {
+            CardTemplate template = templateRepository.findById(templateId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+            deck.setTemplate(template);
+        }
         return deck;
     }
 

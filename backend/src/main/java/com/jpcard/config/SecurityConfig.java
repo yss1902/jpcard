@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/cards/**", "/api/posts/**", "/api/decks/**", "/api/comments/**", "/api/stats/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cards/**", "/api/posts/**", "/api/decks/**", "/api/comments/**", "/api/stats/**", "/api/templates/**").permitAll()
                         .requestMatchers("/api/study/**").authenticated() // Study endpoints require auth
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico", "/**/*.js", "/**/*.css").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

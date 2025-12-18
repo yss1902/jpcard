@@ -20,7 +20,7 @@ public class DeckController {
     @GetMapping
     public ResponseEntity<List<DeckResponse>> list() {
         List<DeckResponse> responses = deckService.findAll().stream()
-                .map(d -> new DeckResponse(d.getId(), d.getName(), d.getDescription()))
+                .map(d -> new DeckResponse(d.getId(), d.getName(), d.getDescription(), d.getTemplate() != null ? d.getTemplate().getId() : null))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -28,19 +28,19 @@ public class DeckController {
     @GetMapping("/{id}")
     public ResponseEntity<DeckResponse> get(@PathVariable Long id) {
         var d = deckService.findById(id);
-        return ResponseEntity.ok(new DeckResponse(d.getId(), d.getName(), d.getDescription()));
+        return ResponseEntity.ok(new DeckResponse(d.getId(), d.getName(), d.getDescription(), d.getTemplate() != null ? d.getTemplate().getId() : null));
     }
 
     @PostMapping
     public ResponseEntity<DeckResponse> create(@RequestBody DeckRequest request) {
-        var d = deckService.create(request.name(), request.description());
-        return ResponseEntity.ok(new DeckResponse(d.getId(), d.getName(), d.getDescription()));
+        var d = deckService.create(request.name(), request.description(), request.templateId());
+        return ResponseEntity.ok(new DeckResponse(d.getId(), d.getName(), d.getDescription(), d.getTemplate() != null ? d.getTemplate().getId() : null));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<DeckResponse> update(@PathVariable Long id, @RequestBody DeckRequest request) {
-        var d = deckService.update(id, request.name(), request.description());
-        return ResponseEntity.ok(new DeckResponse(d.getId(), d.getName(), d.getDescription()));
+        var d = deckService.update(id, request.name(), request.description(), request.templateId());
+        return ResponseEntity.ok(new DeckResponse(d.getId(), d.getName(), d.getDescription(), d.getTemplate() != null ? d.getTemplate().getId() : null));
     }
 
     @DeleteMapping("/{id}")

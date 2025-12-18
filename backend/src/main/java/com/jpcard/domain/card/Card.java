@@ -21,6 +21,9 @@ public class Card {
     @Column(nullable = false)
     private String meaning;
 
+    @Column(columnDefinition = "TEXT")
+    private String contentJson; // JSON for dynamic fields
+
     @Column(nullable = false)
     private boolean isMemorized = false;
 

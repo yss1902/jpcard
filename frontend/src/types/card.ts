@@ -4,4 +4,5 @@ export interface Card {
   meaning: string;
   isMemorized: boolean;
   deckId?: number;
+  fields?: Record<string, string>;
 }

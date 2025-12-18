@@ -3,6 +3,8 @@ import { api } from "../libs/api";
 import { speak } from "../libs/tts";
 import Layout from "../components/Layout";
 import type { Card } from "../types/card";
+import type { Deck } from "../types/deck";
+import type { CardTemplate, FieldDefinition } from "../types/template";
 import { useSearchParams } from "react-router-dom";
 import "../App.css"; // Ensure CSS is available
 
@@ -11,26 +13,41 @@ export default function StudyPage() {
   const deckId = searchParams.get("deckId");
 
   const [cards, setCards] = useState<Card[]>([]);
+  const [template, setTemplate] = useState<CardTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
-    fetchCards();
+    fetchData();
   }, [deckId]);
 
-  const fetchCards = () => {
+  const fetchData = async () => {
     setLoading(true);
-    const endpoint = deckId ? `/study/due?deckId=${deckId}` : "/cards";
+    try {
+        if (deckId) {
+            const deckRes = await api.get<Deck>(`/decks/${deckId}`);
+            if (deckRes.data.templateId) {
+                const tmplRes = await api.get<CardTemplate[]>(`/templates`);
+                const tmpl = tmplRes.data.find(t => t.id === deckRes.data.templateId);
+                setTemplate(tmpl || null);
+            }
+        }
 
-    api
-      .get<Card[]>(endpoint)
-      .then((res) => {
-        setCards(res.data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+        const endpoint = deckId ? `/study/due?deckId=${deckId}` : "/cards";
+        const cardsRes = await api.get<Card[]>(endpoint);
+        setCards(cardsRes.data);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setLoading(false);
+    }
   };
+
+  // Helper to get fields
+  const getFields = () => template ? JSON.parse(template.structureJson) as FieldDefinition[] : [];
+  const frontFields = getFields().filter(f => f.position === "FRONT");
+  const backFields = getFields().filter(f => f.position === "BACK");
 
   const currentCard = cards[currentIndex];
 
@@ -38,13 +55,12 @@ export default function StudyPage() {
     if (!currentCard) return;
     try {
         await api.post("/study/review", { cardId: currentCard.id, rating });
-        // Move to next card
         setIsFlipped(false);
         if (currentIndex < cards.length - 1) {
             setCurrentIndex(prev => prev + 1);
         } else {
-            // Refetch to see if more due
-            fetchCards();
+            // Refetch
+            fetchData();
             setCurrentIndex(0);
         }
     } catch (err) {
@@ -72,28 +88,72 @@ export default function StudyPage() {
           className={`flash-card ${isFlipped ? "flipped" : ""}`}
           onClick={() => setIsFlipped(!isFlipped)}
         >
+          {/* FRONT */}
           <div className="card-face card-front">
-            <span className="card-label">TERM</span>
-            <h2>{currentCard.term}</h2>
-            <button
-              className="icon-btn"
-              onClick={(e) => { e.stopPropagation(); speak(currentCard.term); }}
-              style={{ position: 'absolute', top: 16, right: 16 }}
-            >
-              🔊
-            </button>
+            {frontFields.length > 0 ? (
+                frontFields.map((f, i) => (
+                    <div key={f.key} style={{ marginBottom: 10 }}>
+                        <span className="card-label">{f.label}</span>
+                        <h2>{currentCard.fields?.[f.key] || currentCard.term}</h2>
+                        <button
+                          className="icon-btn"
+                          onClick={(e) => { e.stopPropagation(); speak(currentCard.fields?.[f.key] || currentCard.term); }}
+                          style={{ position: 'absolute', top: 16, right: 16 }}
+                        >
+                          🔊
+                        </button>
+                    </div>
+                ))
+            ) : (
+                // Fallback
+                <>
+                    <span className="card-label">TERM</span>
+                    <h2>{currentCard.term}</h2>
+                    <button
+                      className="icon-btn"
+                      onClick={(e) => { e.stopPropagation(); speak(currentCard.term); }}
+                      style={{ position: 'absolute', top: 16, right: 16 }}
+                    >
+                      🔊
+                    </button>
+                </>
+            )}
             <p className="click-hint">Click to flip</p>
           </div>
+
+          {/* BACK */}
           <div className="card-face card-back">
-            <span className="card-label">MEANING</span>
-            <h2>{currentCard.meaning}</h2>
-            <button
-              className="icon-btn"
-              onClick={(e) => { e.stopPropagation(); speak(currentCard.meaning, "en-US"); }}
-              style={{ position: 'absolute', top: 16, right: 16 }}
-            >
-              🔊
-            </button>
+             {backFields.length > 0 ? (
+                backFields.map((f, i) => (
+                    <div key={f.key} style={{ marginBottom: 15 }}>
+                        <span className="card-label">{f.label}</span>
+                        <h3 style={{ margin: '5px 0' }}>{currentCard.fields?.[f.key] || (f.key === 'meaning' ? currentCard.meaning : '')}</h3>
+                        <button
+                          className="icon-btn"
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              speak(currentCard.fields?.[f.key] || (f.key === 'meaning' ? currentCard.meaning : ''), "en-US");
+                          }}
+                          style={{ marginLeft: 10, fontSize: '0.8rem' }}
+                        >
+                          🔊
+                        </button>
+                    </div>
+                ))
+             ) : (
+                // Fallback
+                <>
+                    <span className="card-label">MEANING</span>
+                    <h2>{currentCard.meaning}</h2>
+                    <button
+                      className="icon-btn"
+                      onClick={(e) => { e.stopPropagation(); speak(currentCard.meaning, "en-US"); }}
+                      style={{ position: 'absolute', top: 16, right: 16 }}
+                    >
+                      🔊
+                    </button>
+                </>
+             )}
           </div>
         </div>
 

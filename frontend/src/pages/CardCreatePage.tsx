@@ -3,26 +3,57 @@ import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Deck } from "../types/deck";
+import type { CardTemplate, FieldDefinition } from "../types/template";
 
 export default function CardCreatePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preSelectedDeckId = searchParams.get("deckId");
 
-  const [term, setTerm] = useState("");
-  const [meaning, setMeaning] = useState("");
   const [deckId, setDeckId] = useState(preSelectedDeckId || "");
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [templates, setTemplates] = useState<CardTemplate[]>([]);
+
+  // Dynamic fields state
+  const [fields, setFields] = useState<Record<string, string>>({});
+
+  // To handle legacy fixed fields while migrating or if template is simple
+  const [term, setTerm] = useState("");
+  const [meaning, setMeaning] = useState("");
+
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     api.get<Deck[]>("/decks").then(res => setDecks(res.data)).catch(console.error);
+    api.get<CardTemplate[]>("/templates").then(res => setTemplates(res.data)).catch(console.error);
   }, []);
+
+  // Determine current template fields
+  const selectedDeck = decks.find(d => String(d.id) === deckId);
+  const currentTemplate = selectedDeck && templates.find(t => t.id === selectedDeck.templateId);
+
+  const templateFields: FieldDefinition[] = currentTemplate
+      ? JSON.parse(currentTemplate.structureJson)
+      : []; // fallback or empty
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/cards", { term, meaning, deckId: deckId ? Number(deckId) : null });
+      // Map dynamic fields to legacy term/meaning for compatibility/search
+      // If template exists, find which fields map to "term" and "meaning" keys, or just use first/second?
+      // Our template structure uses keys "term" and "meaning".
+      // So we can extract them from `fields`.
+
+      const payloadTerm = templateFields.length > 0 ? (fields["term"] || "") : term;
+      const payloadMeaning = templateFields.length > 0 ? (fields["meaning"] || "") : meaning;
+
+      await api.post("/cards", {
+          term: payloadTerm,
+          meaning: payloadMeaning,
+          deckId: deckId ? Number(deckId) : null,
+          fields: fields
+      });
+
       if (deckId) {
           navigate(`/decks/${deckId}`);
       } else {
@@ -46,32 +77,6 @@ export default function CardCreatePage() {
           </div>
 
           <form onSubmit={onCreate} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-            <div className="input-group">
-              <label htmlFor="card-term" className="input-label">Term / Word</label>
-              <input
-                id="card-term"
-                className="input-field"
-                placeholder="e.g., 勉強 (Study)"
-                value={term}
-                onChange={(e) => setTerm(e.target.value)}
-                required
-                style={{ padding: "12px 16px", fontSize: "1.1rem" }}
-              />
-            </div>
-
-            <div className="input-group">
-              <label htmlFor="card-meaning" className="input-label">Meaning / Definition</label>
-              <textarea
-                id="card-meaning"
-                className="input-field"
-                rows={3}
-                placeholder="e.g., The act of acquiring knowledge"
-                value={meaning}
-                onChange={(e) => setMeaning(e.target.value)}
-                required
-                style={{ resize: "vertical" }}
-              />
-            </div>
 
             <div className="input-group">
                <label htmlFor="card-deck" className="input-label">Assign to Deck</label>
@@ -89,6 +94,64 @@ export default function CardCreatePage() {
                </select>
             </div>
 
+            {templateFields.length > 0 ? (
+                // Dynamic Fields
+                templateFields.map(field => (
+                    <div className="input-group" key={field.key}>
+                      <label htmlFor={`field-${field.key}`} className="input-label">{field.label}</label>
+                      {field.key === 'meaning' || field.key === 'note' ? (
+                          <textarea
+                            id={`field-${field.key}`}
+                            className="input-field"
+                            rows={3}
+                            value={fields[field.key] || ""}
+                            onChange={(e) => setFields({...fields, [field.key]: e.target.value})}
+                            style={{ resize: "vertical" }}
+                          />
+                      ) : (
+                          <input
+                            id={`field-${field.key}`}
+                            className="input-field"
+                            value={fields[field.key] || ""}
+                            onChange={(e) => setFields({...fields, [field.key]: e.target.value})}
+                            style={{ padding: "12px 16px", fontSize: "1.1rem" }}
+                          />
+                      )}
+                    </div>
+                ))
+            ) : (
+                // Fallback Legacy Fields
+                <>
+                    <div className="input-group">
+                      <label htmlFor="card-term" className="input-label">Term / Word</label>
+                      <input
+                        id="card-term"
+                        className="input-field"
+                        placeholder="e.g., 勉強 (Study)"
+                        value={term}
+                        onChange={(e) => setTerm(e.target.value)}
+                        required
+                        style={{ padding: "12px 16px", fontSize: "1.1rem" }}
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label htmlFor="card-meaning" className="input-label">Meaning / Definition</label>
+                      <textarea
+                        id="card-meaning"
+                        className="input-field"
+                        rows={3}
+                        placeholder="e.g., The act of acquiring knowledge"
+                        value={meaning}
+                        onChange={(e) => setMeaning(e.target.value)}
+                        required
+                        style={{ resize: "vertical" }}
+                      />
+                    </div>
+                </>
+            )}
+
+            {/* Moved Deck Selector Up */}
             <button type="submit" className="primary-btn" style={{ marginTop: 10, padding: "14px", fontSize: "1.1rem" }}>
               Add Card
             </button>
