@@ -46,6 +46,7 @@ class CardServiceTest {
         card.setMeaning("Old Meaning");
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenReturn(card);
 
         Card updated = cardService.update(1L, "New", "New Meaning");
 
@@ -54,6 +55,7 @@ class CardServiceTest {
         // Service just updates the entity object and returns it (transactional handles save)
         // But verifying findById was called
         verify(cardRepository).findById(1L);
+        verify(cardRepository).save(any(Card.class));
     }
 
     @Test
@@ -72,10 +74,12 @@ class CardServiceTest {
         card.setMemorized(false);
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenReturn(card);
 
         Card updated = cardService.changeMemorizedStatus(1L, true);
 
         assertTrue(updated.isMemorized());
         verify(cardRepository).findById(1L);
+        verify(cardRepository).save(any(Card.class));
     }
 }

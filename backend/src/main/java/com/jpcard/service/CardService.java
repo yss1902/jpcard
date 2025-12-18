@@ -93,7 +93,7 @@ public class CardService {
         } else {
             card.setDeck(null);
         }
-        return card;
+        return cardRepository.save(card);
     }
 
     @Transactional
@@ -101,7 +101,7 @@ public class CardService {
         Card card = findById(id);
         card.setTerm(term);
         card.setMeaning(meaning);
-        return card;
+        return cardRepository.save(card);
     }
 
     public Map<String, String> parseContent(String json) {
@@ -122,6 +122,6 @@ public class CardService {
     public Card changeMemorizedStatus(Long id, boolean isMemorized) {
         Card card = findById(id);
         card.setMemorized(isMemorized);
-        return card;
+        return cardRepository.save(card);
     }
 }

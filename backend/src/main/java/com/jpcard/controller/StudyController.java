@@ -31,7 +31,7 @@ public class StudyController {
         var cards = studyService.getDueCards(user.getId(), deckId);
 
         List<CardResponse> responses = cards.stream()
-                .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), false, card.getDeck().getId(), cardService.parseContent(card.getContentJson())))
+                .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck().getId(), cardService.parseContent(card.getContentJson())))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
