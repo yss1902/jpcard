@@ -91,7 +91,7 @@ export default function StudyPage() {
           {/* FRONT */}
           <div className="card-face card-front">
             {frontFields.length > 0 ? (
-                frontFields.map((f, i) => (
+                frontFields.map((f) => (
                     <div key={f.key} style={{ marginBottom: 10 }}>
                         <span className="card-label">{f.label}</span>
                         <h2>{currentCard.fields?.[f.key] || currentCard.term}</h2>
@@ -124,7 +124,7 @@ export default function StudyPage() {
           {/* BACK */}
           <div className="card-face card-back">
              {backFields.length > 0 ? (
-                backFields.map((f, i) => (
+                backFields.map((f) => (
                     <div key={f.key} style={{ marginBottom: 15 }}>
                         <span className="card-label">{f.label}</span>
                         <h3 style={{ margin: '5px 0' }}>{currentCard.fields?.[f.key] || (f.key === 'meaning' ? currentCard.meaning : '')}</h3>

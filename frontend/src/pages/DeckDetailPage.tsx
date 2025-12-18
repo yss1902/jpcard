@@ -32,7 +32,7 @@ export default function DeckDetailPage() {
       api.put(`/decks/${deck.id}`, { ...deck, templateId: newTemplateId }).then(res => {
           setDeck(res.data);
           alert("Deck template updated. Existing card data is preserved but presentation may change.");
-      }).catch(err => alert("Failed to update template"));
+      }).catch(() => alert("Failed to update template"));
   };
 
   if (!deck) return <Layout><p className="muted">Loading deck...</p></Layout>;

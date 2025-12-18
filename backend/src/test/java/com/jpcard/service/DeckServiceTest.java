@@ -1,6 +1,7 @@
 package com.jpcard.service;
 
 import com.jpcard.domain.deck.Deck;
+import com.jpcard.repository.CardTemplateRepository;
 import com.jpcard.repository.DeckRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,8 @@ class DeckServiceTest {
 
     @Mock
     private DeckRepository deckRepository;
+    @Mock
+    private CardTemplateRepository templateRepository;
 
     @InjectMocks
     private DeckService deckService;
@@ -30,8 +33,9 @@ class DeckServiceTest {
         deck.setDescription("Description");
 
         when(deckRepository.save(any(Deck.class))).thenReturn(deck);
+        when(templateRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Deck created = deckService.create("Test Deck", "Description");
+        Deck created = deckService.create("Test Deck", "Description", null);
 
         assertNotNull(created);
         assertEquals("Test Deck", created.getName());
@@ -46,7 +50,7 @@ class DeckServiceTest {
 
         when(deckRepository.findById(1L)).thenReturn(Optional.of(deck));
 
-        Deck updated = deckService.update(1L, "New Name", "New Desc");
+        Deck updated = deckService.update(1L, "New Name", "New Desc", null);
 
         assertEquals("New Name", updated.getName());
         verify(deckRepository).findById(1L);

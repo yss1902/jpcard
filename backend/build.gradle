@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -42,6 +43,7 @@ dependencies {
 
     // ★ 여기 수정
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

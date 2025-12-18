@@ -3,6 +3,7 @@ package com.jpcard.controller;
 import com.jpcard.controller.dto.CardResponse;
 import com.jpcard.controller.dto.ReviewRequest;
 import com.jpcard.domain.user.User;
+import com.jpcard.service.CardService;
 import com.jpcard.service.StudyService;
 import com.jpcard.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class StudyController {
 
     private final StudyService studyService;
     private final UserService userService; // To resolve User ID from Auth
+    private final CardService cardService;
 
     @GetMapping("/due")
     public ResponseEntity<List<CardResponse>> getDueCards(@RequestParam Long deckId, Authentication authentication) {
@@ -29,7 +31,7 @@ public class StudyController {
         var cards = studyService.getDueCards(user.getId(), deckId);
 
         List<CardResponse> responses = cards.stream()
-                .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), false, card.getDeck().getId()))
+                .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), false, card.getDeck().getId(), cardService.parseContent(card.getContentJson())))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
