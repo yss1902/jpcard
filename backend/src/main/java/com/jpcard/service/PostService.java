@@ -1,18 +1,25 @@
 package com.jpcard.service;
 
 import com.jpcard.domain.post.Post;
+import com.jpcard.domain.post.PostAttachment;
+import com.jpcard.repository.PostAttachmentRepository;
 import com.jpcard.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostAttachmentRepository postAttachmentRepository;
 
     @Transactional(readOnly = true)
     public List<Post> search(String keyword) {
@@ -25,13 +32,57 @@ public class PostService {
     }
 
     @Transactional
-    public Post create(String title, String content, String authorName, String ipAddress) {
+    public Post create(String title, String content, String authorName, String ipAddress, List<MultipartFile> files) {
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
         post.setAuthorName(authorName);
         post.setIpAddress(ipAddress);
-        return postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file.isEmpty()) continue;
+                try {
+                    String originalFilename = file.getOriginalFilename();
+                    String storeFilename = createStoreFilename(originalFilename);
+                    String fullPath = getFullPath(storeFilename);
+
+                    file.transferTo(new File(fullPath).getAbsoluteFile());
+
+                    PostAttachment attachment = new PostAttachment();
+                    attachment.setPost(savedPost);
+                    attachment.setOriginalFilename(originalFilename);
+                    attachment.setStoreFilename(storeFilename);
+                    postAttachmentRepository.save(attachment);
+
+                    savedPost.getAttachments().add(attachment);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to store file", e);
+                }
+            }
+        }
+        return savedPost;
+    }
+
+    private String createStoreFilename(String originalFilename) {
+        String ext = extractExt(originalFilename);
+        String uuid = UUID.randomUUID().toString();
+        return uuid + "." + ext;
+    }
+
+    private String extractExt(String originalFilename) {
+        int pos = originalFilename.lastIndexOf(".");
+        return (pos == -1) ? "" : originalFilename.substring(pos + 1);
+    }
+
+    private String getFullPath(String filename) {
+        String uploadDir = "uploads/";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return uploadDir + filename;
     }
 
     @Transactional(readOnly = true)

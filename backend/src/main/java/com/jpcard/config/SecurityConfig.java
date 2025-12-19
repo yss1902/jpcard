@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -34,9 +35,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         // Allow GET for everything public
-                        .requestMatchers(HttpMethod.GET, "/api/cards/**", "/api/posts/**", "/api/decks/**", "/api/comments/**", "/api/stats/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cards/**", "/api/decks/**", "/api/comments/**", "/api/stats/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         // Allow POST for Posts and Comments (Anonymous posting)
-                        .requestMatchers(HttpMethod.POST, "/api/posts/**", "/api/posts/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/posts", "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**").permitAll()
                         .requestMatchers("/api/study/**").authenticated() // Study endpoints require auth
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -63,4 +67,9 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder encoder() { return new BCryptPasswordEncoder(); }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/uploads/**");
+    }
 }

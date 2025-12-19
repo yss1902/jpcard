@@ -8,12 +8,24 @@ export default function PostCreatePage() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [files, setFiles] = useState<FileList | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const onCreate = async () => {
     try {
-      await api.post("/posts", { title, content });
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
+      if (files) {
+        for (let i = 0; i < files.length; i++) {
+          formData.append("files", files[i]);
+        }
+      }
+
+      await api.post("/posts", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setShowSuccess(true);
       setTimeout(() => navigate("/posts"), 1500);
     } catch (err) {
@@ -52,9 +64,19 @@ export default function PostCreatePage() {
             <textarea
               id="post-content"
               className="text-area"
-              placeholder="내용을 입력"
+              placeholder="내용을 입력 (Markdown 지원)"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+            />
+          </div>
+          <div className="input-field">
+            <label htmlFor="post-files">첨부 파일</label>
+            <input
+              id="post-files"
+              type="file"
+              multiple
+              className="text-input"
+              onChange={(e) => setFiles(e.target.files)}
             />
           </div>
           <button className="primary-btn" onClick={onCreate}>
