@@ -1,6 +1,7 @@
 package com.jpcard.service;
 
 import com.jpcard.domain.post.Post;
+import com.jpcard.repository.PostAttachmentRepository;
 import com.jpcard.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,8 @@ class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private PostAttachmentRepository postAttachmentRepository;
 
     @InjectMocks
     private PostService postService;
@@ -33,7 +36,7 @@ class PostServiceTest {
 
         when(postRepository.save(any(Post.class))).thenReturn(post);
 
-        Post created = postService.create("Title", "Content", "User", "127.0.0.1");
+        Post created = postService.create("Title", "Content", "User", "127.0.0.1", null);
 
         assertNotNull(created);
         assertEquals("Title", created.getTitle());

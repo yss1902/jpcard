@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useParams, Link } from "react-router-dom";
@@ -112,9 +114,32 @@ export default function PostDetailPage() {
         <div style={{ marginBottom: 10, fontSize: "0.9rem", color: "rgba(255,255,255,0.6)" }}>
             By {post.authorName || "Unknown"}
         </div>
-        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6, marginBottom: 20 }}>
-           {post.content}
+        <div style={{ lineHeight: 1.6, marginBottom: 20 }}>
+           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
         </div>
+
+        {post.attachmentUrls && post.attachmentUrls.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+             <h4 style={{ marginBottom: 10 }}>Attachments</h4>
+             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {post.attachmentUrls.map((url, idx) => {
+                    const isImage = url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                    const fileName = url.split('/').pop();
+                    return (
+                        <div key={idx} style={{ background: 'rgba(255,255,255,0.1)', padding: 10, borderRadius: 5 }}>
+                            {isImage ? (
+                                <a href={url} target="_blank" rel="noreferrer">
+                                  <img src={url} alt={fileName} style={{ maxWidth: 200, maxHeight: 200, display: 'block' }} />
+                                </a>
+                            ) : (
+                                <a href={url} target="_blank" rel="noreferrer" style={{ color: '#aaa', textDecoration: 'underline' }}>{fileName}</a>
+                            )}
+                        </div>
+                    );
+                })}
+             </div>
+          </div>
+        )}
 
         <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 20 }}>
            <button className="secondary-btn" onClick={handleLike}>

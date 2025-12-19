@@ -33,7 +33,7 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> list(@RequestParam(required = false) String q) {
         List<Post> posts = postService.search(q);
         List<PostResponse> responses = posts.stream()
-                .map(post -> new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()))
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -41,22 +41,26 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> get(@PathVariable Long id) {
         var post = postService.findById(id);
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
+        return ResponseEntity.ok(mapToResponse(post));
     }
 
-    @PostMapping
-    public ResponseEntity<PostResponse> create(@RequestBody PostRequest request, HttpServletRequest httpRequest) {
+    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostResponse> create(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam(value = "files", required = false) List<org.springframework.web.multipart.MultipartFile> files,
+            HttpServletRequest httpRequest) {
         String authorName = determineAuthorName(httpRequest);
         String ipAddress = httpRequest.getRemoteAddr();
 
-        var post = postService.create(request.title(), request.content(), authorName, ipAddress);
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
+        var post = postService.create(title, content, authorName, ipAddress, files);
+        return ResponseEntity.ok(mapToResponse(post));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable Long id, @RequestBody PostRequest request) {
         var post = postService.update(id, request.title(), request.content());
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
+        return ResponseEntity.ok(mapToResponse(post));
     }
 
     @DeleteMapping("/{id}")
@@ -68,7 +72,15 @@ public class PostController {
     @PostMapping("/{id}/like")
     public ResponseEntity<PostResponse> like(@PathVariable Long id) {
         var post = postService.likePost(id);
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
+        return ResponseEntity.ok(mapToResponse(post));
+    }
+
+    private PostResponse mapToResponse(Post post) {
+        List<String> attachmentUrls = post.getAttachments() == null ? java.util.Collections.emptyList() :
+                post.getAttachments().stream()
+                        .map(a -> "/uploads/" + a.getStoreFilename())
+                        .collect(Collectors.toList());
+        return new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName(), attachmentUrls);
     }
 
     private String determineAuthorName(HttpServletRequest request) {
