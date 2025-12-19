@@ -25,10 +25,12 @@ public class PostService {
     }
 
     @Transactional
-    public Post create(String title, String content) {
+    public Post create(String title, String content, String authorName, String ipAddress) {
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
+        post.setAuthorName(authorName);
+        post.setIpAddress(ipAddress);
         return postRepository.save(post);
     }
 

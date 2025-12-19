@@ -3,8 +3,11 @@ package com.jpcard.controller;
 import com.jpcard.controller.dto.PostRequest;
 import com.jpcard.controller.dto.PostResponse;
 import com.jpcard.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import com.jpcard.domain.post.Post;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +33,7 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> list(@RequestParam(required = false) String q) {
         List<Post> posts = postService.search(q);
         List<PostResponse> responses = posts.stream()
-                .map(post -> new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()))
+                .map(post -> new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -38,19 +41,22 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> get(@PathVariable Long id) {
         var post = postService.findById(id);
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
     }
 
     @PostMapping
-    public ResponseEntity<PostResponse> create(@RequestBody PostRequest request) {
-        var post = postService.create(request.title(), request.content());
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
+    public ResponseEntity<PostResponse> create(@RequestBody PostRequest request, HttpServletRequest httpRequest) {
+        String authorName = determineAuthorName(httpRequest);
+        String ipAddress = httpRequest.getRemoteAddr();
+
+        var post = postService.create(request.title(), request.content(), authorName, ipAddress);
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable Long id, @RequestBody PostRequest request) {
         var post = postService.update(id, request.title(), request.content());
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
     }
 
     @DeleteMapping("/{id}")
@@ -62,6 +68,25 @@ public class PostController {
     @PostMapping("/{id}/like")
     public ResponseEntity<PostResponse> like(@PathVariable Long id) {
         var post = postService.likePost(id);
-        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount()));
+        return ResponseEntity.ok(new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName()));
+    }
+
+    private String determineAuthorName(HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            return authentication.getName(); // Use username as display name
+        }
+
+        String ip = request.getRemoteAddr();
+        return maskIpAddress(ip);
+    }
+
+    private String maskIpAddress(String ip) {
+        if (ip == null) return "Unknown";
+        String[] parts = ip.split("\\.");
+        if (parts.length == 4) {
+            return parts[0] + "." + parts[1] + ".***.***";
+        }
+        return "Anonymous";
     }
 }

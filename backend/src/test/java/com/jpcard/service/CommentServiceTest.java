@@ -1,5 +1,6 @@
 package com.jpcard.service;
 
+import com.jpcard.controller.dto.CommentResponse;
 import com.jpcard.domain.post.Comment;
 import com.jpcard.domain.post.Post;
 import com.jpcard.repository.CommentRepository;
@@ -39,9 +40,9 @@ class CommentServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
-        Comment created = commentService.addComment(1L, "Nice post");
+        CommentResponse created = commentService.addComment(1L, "Nice post", "User", "127.0.0.1", null);
 
-        assertEquals("Nice post", created.getContent());
+        assertEquals("Nice post", created.content());
         verify(commentRepository).save(any(Comment.class));
     }
 }

@@ -28,13 +28,16 @@ class PostServiceTest {
         post.setId(1L);
         post.setTitle("Title");
         post.setContent("Content");
+        post.setAuthorName("User");
+        post.setIpAddress("127.0.0.1");
 
         when(postRepository.save(any(Post.class))).thenReturn(post);
 
-        Post created = postService.create("Title", "Content");
+        Post created = postService.create("Title", "Content", "User", "127.0.0.1");
 
         assertNotNull(created);
         assertEquals("Title", created.getTitle());
+        assertEquals("User", created.getAuthorName());
         verify(postRepository).save(any(Post.class));
     }
 

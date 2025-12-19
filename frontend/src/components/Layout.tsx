@@ -10,6 +10,15 @@ interface LayoutProps {
 
 export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
   const { pathname } = useLocation();
+  const token = localStorage.getItem("token");
+
+  const handleLogout = () => {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      window.location.href = "/login";
+    }
+  };
 
   const links = [
     { to: "/", label: "Home" },
@@ -18,7 +27,6 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
     { to: "/study", label: "Study" },
     { to: "/posts", label: "Posts" },
     { to: "/user", label: "My Page" },
-    { to: "/login", label: "Login" },
   ];
 
   return (
@@ -45,6 +53,32 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
                 {link.label}
               </Link>
             ))}
+            {!token ? (
+              <Link
+                to="/login"
+                className="nav-link"
+                style={{
+                  borderColor: pathname === "/login" ? "rgba(255, 255, 255, 0.25)" : undefined,
+                  background: pathname === "/login" ? "rgba(255, 255, 255, 0.08)" : undefined,
+                  color: pathname === "/login" ? "#ffffff" : undefined,
+                }}
+              >
+                Login
+              </Link>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="nav-link"
+                style={{
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: "inherit",
+                  fontFamily: "inherit",
+                }}
+              >
+                Logout
+              </button>
+            )}
           </div>
         </header>
 
