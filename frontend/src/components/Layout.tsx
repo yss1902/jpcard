@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,6 +10,10 @@ interface LayoutProps {
 
 export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  // Check for token to determine auth state
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const links = [
     { to: "/", label: "Home" },
@@ -18,8 +22,14 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
     { to: "/study", label: "Study" },
     { to: "/posts", label: "Posts" },
     { to: "/user", label: "My Page" },
-    { to: "/login", label: "Login" },
+    // Login removed from here
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    navigate("/login");
+  };
 
   return (
     <div className="app-shell">
@@ -45,6 +55,40 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
                 {link.label}
               </Link>
             ))}
+
+            {isLoggedIn ? (
+              <button
+                className="nav-link"
+                onClick={handleLogout}
+                style={{
+                  cursor: "pointer",
+                  // Reset button styles to match link style
+                  fontFamily: "inherit",
+                  fontSize: "inherit",
+                  lineHeight: "inherit",
+                  textDecoration: "none",
+                  display: "inline-block",
+                  background: "transparent",
+                  border: "none",
+                }}
+              >
+                Logout
+              </button>
+            ) : (
+               <Link
+                to="/login"
+                className="nav-link"
+                style={{
+                  borderColor:
+                    pathname === "/login" ? "rgba(255, 255, 255, 0.25)" : undefined,
+                  background:
+                    pathname === "/login" ? "rgba(255, 255, 255, 0.08)" : undefined,
+                  color: pathname === "/login" ? "#ffffff" : undefined,
+                }}
+              >
+                Login
+              </Link>
+            )}
           </div>
         </header>
 
