@@ -1,5 +1,3 @@
-import React from "react";
-
 interface SuccessModalProps {
   isOpen: boolean;
   message: string;

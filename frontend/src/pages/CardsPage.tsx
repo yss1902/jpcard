@@ -11,32 +11,6 @@ export default function CardsPage() {
 
   // Search States
   const [query, setQuery] = useState("");
-  const [showMemorized, setShowMemorized] = useState(false);
-
-  // Debounce logic or just search on button click. For now simple effect with dependency on states.
-  // Actually, let's fetch on change but with debouncing is better.
-  // Given the requirement, I'll just trigger fetch when these change.
-
-  useEffect(() => {
-    fetchCards();
-  }, [query, showMemorized]);
-
-  const fetchCards = () => {
-    // Build query params
-    const params = new URLSearchParams();
-    if (query) params.append("q", query);
-    // If showMemorized is true (checked), we want ALL (null). If false (unchecked), we assume "hide memorized" or "all"?
-    // "Show Memorized" toggle usually implies: if OFF, show all? Or if OFF, hide memorized?
-    // Let's implement: "Memorized Only" vs "All" vs "Pending Only".
-    // Simple filter: "Show Memorized" toggle.
-    // Backend accepts `memorized` boolean. True=Only Memorized. False=Only Pending. Null=All.
-    // Let's make a dropdown or 3-way toggle.
-    // Or simpler: A checkbox "Memorized Only" (memorized=true). A checkbox "Pending Only" (memorized=false).
-    // Let's stick to the previous Study Mode pattern: "Hide Memorized" (memorized=false).
-
-    // UI: Filter: [All / Pending / Memorized]
-    // Default All.
-  };
 
   // Re-writing state to support 3-way filter
   const [filterType, setFilterType] = useState<"ALL" | "PENDING" | "MEMORIZED">("ALL");

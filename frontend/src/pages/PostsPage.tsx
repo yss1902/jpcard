@@ -32,17 +32,6 @@ export default function PostsPage() {
           </Link>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ margin: "20px 0" }}>
-           <input
-             className="input-field"
-             style={{ width: "100%" }}
-             placeholder="Search posts..."
-             value={query}
-             onChange={(e) => setQuery(e.target.value)}
-           />
-        </div>
-
         <p className="muted">{status}</p>
         <div className="card-grid">
           {posts.map((p) => (
@@ -52,9 +41,9 @@ export default function PostsPage() {
                   <Link to={`/posts/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <h3 className="item-title">{p.title}</h3>
                   </Link>
-                  <p className="item-subtitle" style={{ whiteSpace: "pre-wrap" }}>
-                    {p.content}
-                  </p>
+                  <div className="item-subtitle" style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)" }}>
+                     <span style={{ marginRight: 10 }}>By {p.authorName || "Unknown"}</span>
+                  </div>
                   <div style={{ marginTop: 8, display: 'flex', gap: 10, fontSize: '0.85rem', alignItems: 'center' }} className="muted">
                      <button
                        className="secondary-btn"
@@ -91,6 +80,17 @@ export default function PostsPage() {
               </div>
             </article>
           ))}
+        </div>
+
+        {/* Search Bar (Moved to Bottom) */}
+        <div style={{ marginTop: 20 }}>
+           <input
+             className="input-field"
+             style={{ width: "100%" }}
+             placeholder="Search posts..."
+             value={query}
+             onChange={(e) => setQuery(e.target.value)}
+           />
         </div>
       </section>
     </Layout>

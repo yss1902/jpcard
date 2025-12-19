@@ -11,6 +11,8 @@ export default function PostDetailPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [replyTo, setReplyTo] = useState<number | null>(null); // ID of comment being replied to
+  const [replyContent, setReplyContent] = useState("");
 
   useEffect(() => {
     fetchPost();
@@ -50,12 +52,66 @@ export default function PostDetailPage() {
     }
   };
 
+  const handleReply = async (e: React.FormEvent, parentId: number) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return;
+    try {
+        await api.post(`/posts/${id}/comments?parentId=${parentId}`, { content: replyContent });
+        setReplyContent("");
+        setReplyTo(null);
+        fetchComments();
+    } catch(err) {
+        console.error(err);
+    }
+  }
+
+  const renderComments = (list: Comment[], depth = 0) => {
+      return list.map(c => (
+          <div key={c.id} style={{ marginLeft: depth * 20, marginTop: 10 }}>
+              <div style={{ background: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 8 }}>
+                  <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>
+                      {c.authorName || "Unknown"}
+                  </div>
+                  <div style={{ whiteSpace: "pre-wrap" }}>{c.content}</div>
+                  <div style={{ marginTop: 8 }}>
+                      <button
+                        className="muted"
+                        style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "0.8rem", textDecoration: "underline" }}
+                        onClick={() => { setReplyTo(replyTo === c.id ? null : c.id); setReplyContent(""); }}
+                      >
+                          Reply
+                      </button>
+                  </div>
+              </div>
+
+              {replyTo === c.id && (
+                  <form onSubmit={(e) => handleReply(e, c.id)} style={{ marginTop: 8, display: "flex", gap: 8, marginLeft: 10 }}>
+                      <input
+                        className="input-field"
+                        style={{ flex: 1, fontSize: "0.9rem", padding: "6px" }}
+                        placeholder="Write a reply..."
+                        value={replyContent}
+                        onChange={e => setReplyContent(e.target.value)}
+                        autoFocus
+                      />
+                      <button type="submit" className="secondary-btn" style={{ fontSize: "0.8rem" }}>Reply</button>
+                  </form>
+              )}
+
+              {c.replies && c.replies.length > 0 && renderComments(c.replies, depth + 1)}
+          </div>
+      ));
+  };
+
   if (loading) return <Layout pageTitle="Loading..."><p>Please wait</p></Layout>;
   if (!post) return <Layout pageTitle="Not Found"><p>Post not found.</p></Layout>;
 
   return (
     <Layout pageTitle={post.title}>
       <section className="glass-card">
+        <div style={{ marginBottom: 10, fontSize: "0.9rem", color: "rgba(255,255,255,0.6)" }}>
+            By {post.authorName || "Unknown"}
+        </div>
         <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6, marginBottom: 20 }}>
            {post.content}
         </div>
@@ -69,17 +125,14 @@ export default function PostDetailPage() {
 
         <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: "20px 0" }} />
 
-        <h3 className="item-title" style={{ marginBottom: 15 }}>Comments ({comments.length})</h3>
+        <h3 className="item-title" style={{ marginBottom: 15 }}>Comments</h3>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-           {comments.map(c => (
-              <div key={c.id} style={{ background: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 8 }}>
-                 {c.content}
-              </div>
-           ))}
+           {renderComments(comments)}
            {comments.length === 0 && <p className="muted">No comments yet.</p>}
         </div>
 
+        <h4 style={{ fontSize: "1rem", marginBottom: 10 }}>Leave a comment</h4>
         <form onSubmit={handleAddComment} style={{ display: "flex", gap: 10 }}>
            <input
              className="input-field"

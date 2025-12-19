@@ -22,4 +22,10 @@ public class Post {
 
     @Column(nullable = false)
     private int likeCount = 0;
+
+    @Column
+    private String authorName;
+
+    @Column
+    private String ipAddress;
 }
