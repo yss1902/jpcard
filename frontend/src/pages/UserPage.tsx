@@ -13,10 +13,17 @@ export default function UserPage() {
     api
       .get<User>("/users/me")
       .then((res) => {
+        // 성공 시 데이터 확인용 로그
+        console.log("User Data:", res.data); 
         setUser(res.data);
         setStatus("");
       })
-      .catch(() => setStatus("Could not load profile. Please login."));
+      .catch((err) => {
+        // ★ 에러의 진짜 내용을 콘솔과 화면에 출력합니다.
+        console.error("API Error Details:", err);
+        // 만약 HTML이 반환된다면 Proxy 문제, 403이면 토큰 문제
+        setStatus(`Error: ${err.message} (Check Console)`);
+      });
   }, []);
 
   const onLogout = () => {

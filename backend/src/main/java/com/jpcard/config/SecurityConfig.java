@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/cards/**", "/api/posts/**", "/api/decks/**", "/api/comments/**", "/api/stats/**").permitAll()
                         .requestMatchers("/api/study/**").authenticated() // Study endpoints require auth
-                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico", "/**/*.js", "/**/*.css").permitAll()
+                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
