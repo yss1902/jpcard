@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import DOMPurify from "dompurify";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useParams, Link } from "react-router-dom";
@@ -114,9 +113,11 @@ export default function PostDetailPage() {
         <div style={{ marginBottom: 10, fontSize: "0.9rem", color: "rgba(255,255,255,0.6)" }}>
             By {post.authorName || "Unknown"}
         </div>
-        <div style={{ lineHeight: 1.6, marginBottom: 20 }}>
-           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-        </div>
+        <div
+          className="post-content"
+          style={{ lineHeight: 1.6, marginBottom: 20 }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+        />
 
         {post.attachmentUrls && post.attachmentUrls.length > 0 && (
           <div style={{ marginBottom: 20 }}>
