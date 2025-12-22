@@ -48,7 +48,7 @@ public class CardController {
 
     @PostMapping
     public ResponseEntity<CardResponse> create(@RequestBody CardRequest request) {
-        var card = cardService.create(request.term(), request.meaning(), request.deckId());
+        var card = cardService.create(request.term(), request.meaning(), request.deckId(), request.content());
         return ResponseEntity.ok(new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), card.isMemorized(), card.getDeck() != null ? card.getDeck().getId() : null));
     }
 
