@@ -110,7 +110,8 @@ export default function PostDetailPage() {
   return (
     <Layout pageTitle={post.title}>
       <section className="glass-card">
-        <div style={{ marginBottom: 10, fontSize: "0.9rem", color: "rgba(255,255,255,0.6)" }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "10px", lineHeight: 1.2 }}>{post.title}</h1>
+        <div style={{ marginBottom: 20, fontSize: "0.9rem", color: "rgba(255,255,255,0.6)" }}>
             By {post.authorName || "Unknown"}
         </div>
         <div
