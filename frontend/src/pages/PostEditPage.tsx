@@ -11,6 +11,8 @@ export default function PostEditPage() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [isNotice, setIsNotice] = useState(false);
+  const [isManager, setIsManager] = useState(false);
   const [status, setStatus] = useState("");
 
   useEffect(() => {
@@ -19,17 +21,23 @@ export default function PostEditPage() {
       .then((res) => {
         setTitle(res.data.title);
         setContent(res.data.content);
+        setIsNotice(res.data.isNotice);
       })
       .catch((err) => {
         console.error(err);
         setStatus("게시글을 찾을 수 없습니다.");
       });
+
+    api.get("/users/me").then(res => {
+         const roles = res.data.roles || [];
+         if (roles.includes("ROLE_MANAGER")) setIsManager(true);
+    }).catch(() => {});
   }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.put(`/posts/${id}`, { title, content });
+      await api.put(`/posts/${id}`, { title, content, isNotice });
       navigate("/posts");
     } catch (err) {
       console.error(err);
@@ -55,6 +63,21 @@ export default function PostEditPage() {
               required
             />
           </div>
+
+          {isManager && (
+              <div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={isNotice}
+                        onChange={e => setIsNotice(e.target.checked)}
+                        style={{ width: 18, height: 18, accentColor: '#ff6b6b' }}
+                      />
+                      <span style={{ color: '#ff6b6b', fontWeight: 600 }}>공지사항 (Announcement)</span>
+                  </label>
+              </div>
+          )}
+
           <div>
             <label htmlFor="post-content" style={{ display: "block", marginBottom: 4 }} className="muted">
               내용 (Content)

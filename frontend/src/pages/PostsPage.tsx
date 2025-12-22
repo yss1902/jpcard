@@ -39,7 +39,10 @@ export default function PostsPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
                 <div style={{ flex: 1 }}>
                   <Link to={`/posts/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h3 className="item-title">{p.title}</h3>
+                    <h3 className="item-title">
+                        {p.isNotice && <span style={{ color: "#ff6b6b", marginRight: 8, fontWeight: "bold" }}>[공지]</span>}
+                        {p.title}
+                    </h3>
                   </Link>
                   <div className="item-subtitle" style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)" }}>
                      <span style={{ marginRight: 10 }}>By {p.authorName || "Unknown"}</span>

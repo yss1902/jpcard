@@ -30,8 +30,14 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> list(@RequestParam(required = false) String q) {
-        List<Post> posts = postService.search(q);
+    public ResponseEntity<List<PostResponse>> list(@RequestParam(required = false) String q, @RequestParam(required = false, defaultValue = "false") boolean notice) {
+        List<Post> posts;
+        if (notice) {
+            posts = postService.findNotices();
+        } else {
+            posts = postService.search(q);
+        }
+
         List<PostResponse> responses = posts.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -48,18 +54,19 @@ public class PostController {
     public ResponseEntity<PostResponse> create(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "isNotice", required = false, defaultValue = "false") boolean isNotice,
             @RequestParam(value = "files", required = false) List<org.springframework.web.multipart.MultipartFile> files,
             HttpServletRequest httpRequest) {
         String authorName = determineAuthorName(httpRequest);
         String ipAddress = httpRequest.getRemoteAddr();
 
-        var post = postService.create(title, content, authorName, ipAddress, files);
+        var post = postService.create(title, content, isNotice, authorName, ipAddress, files);
         return ResponseEntity.ok(mapToResponse(post));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable Long id, @RequestBody PostRequest request) {
-        var post = postService.update(id, request.title(), request.content());
+        var post = postService.update(id, request.title(), request.content(), request.isNotice());
         return ResponseEntity.ok(mapToResponse(post));
     }
 
@@ -80,13 +87,17 @@ public class PostController {
                 post.getAttachments().stream()
                         .map(a -> "/uploads/" + a.getStoreFilename())
                         .collect(Collectors.toList());
-        return new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName(), attachmentUrls);
+        return new PostResponse(post.getId(), post.getTitle(), post.getContent(), post.getLikeCount(), post.getAuthorName(), attachmentUrls, post.isNotice());
     }
 
     private String determineAuthorName(HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
-            return authentication.getName(); // Use username as display name
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof com.jpcard.domain.user.User) {
+                return ((com.jpcard.domain.user.User) principal).getUsername();
+            }
+            return authentication.getName();
         }
 
         String ip = request.getRemoteAddr();
