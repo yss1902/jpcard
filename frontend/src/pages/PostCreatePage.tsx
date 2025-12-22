@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +13,22 @@ export default function PostCreatePage() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [isNotice, setIsNotice] = useState(false);
+
+  useEffect(() => {
+     api.get("/users/me").then(res => {
+         const roles = res.data.roles || [];
+         if (roles.includes("ROLE_MANAGER")) setIsManager(true);
+     }).catch(() => {});
+  }, []);
 
   const onCreate = async () => {
     try {
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("content", content); // content is now HTML
+      formData.append("content", content);
+      formData.append("isNotice", isNotice.toString());
       if (files) {
         for (let i = 0; i < files.length; i++) {
           formData.append("files", files[i]);
@@ -61,6 +71,21 @@ export default function PostCreatePage() {
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
+
+          {isManager && (
+              <div className="input-field">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={isNotice}
+                        onChange={e => setIsNotice(e.target.checked)}
+                        style={{ width: 18, height: 18, accentColor: '#ff6b6b' }}
+                      />
+                      <span style={{ color: '#ff6b6b', fontWeight: 600 }}>공지사항으로 등록 (Announcement)</span>
+                  </label>
+              </div>
+          )}
+
           <div className="input-field">
             <label htmlFor="post-content">내용</label>
             <div className="quill-wrapper">

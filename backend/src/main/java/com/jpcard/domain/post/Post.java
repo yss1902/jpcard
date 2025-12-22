@@ -32,6 +32,9 @@ public class Post {
     @Column
     private String ipAddress;
 
+    @Column(nullable = false)
+    private boolean isNotice = false;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostAttachment> attachments = new ArrayList<>();
 }

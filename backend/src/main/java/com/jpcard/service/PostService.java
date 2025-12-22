@@ -27,15 +27,21 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
+    public List<Post> findNotices() {
+        return postRepository.findByIsNoticeTrueOrderByIdDesc();
+    }
+
+    @Transactional(readOnly = true)
     public List<Post> findAll() {
         return postRepository.findAll();
     }
 
     @Transactional
-    public Post create(String title, String content, String authorName, String ipAddress, List<MultipartFile> files) {
+    public Post create(String title, String content, boolean isNotice, String authorName, String ipAddress, List<MultipartFile> files) {
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
+        post.setNotice(isNotice);
         post.setAuthorName(authorName);
         post.setIpAddress(ipAddress);
         Post savedPost = postRepository.save(post);
@@ -92,10 +98,11 @@ public class PostService {
     }
 
     @Transactional
-    public Post update(Long id, String title, String content) {
+    public Post update(Long id, String title, String content, boolean isNotice) {
         Post post = findById(id);
         post.setTitle(title);
         post.setContent(content);
+        post.setNotice(isNotice);
         return post;
     }
 
@@ -108,6 +115,6 @@ public class PostService {
     public Post likePost(Long id) {
         Post post = findById(id);
         post.setLikeCount(post.getLikeCount() + 1);
-        return post; // Updated post is returned, Transactional will save it.
+        return post;
     }
 }

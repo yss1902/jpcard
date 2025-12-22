@@ -7,10 +7,10 @@ import type { Post } from "../types/post";
 const Carousel = () => {
     const [current, setCurrent] = useState(0);
     const slides = [
-        "linear-gradient(135deg, #1a1a1a, #2a2a2a)",
-        "linear-gradient(135deg, #2a2a2a, #3a3a3a)",
-        "linear-gradient(135deg, #111111, #222222)",
-        "linear-gradient(135deg, #000000, #1a1a1a)",
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1200&q=80"
     ];
 
     useEffect(() => {
@@ -21,17 +21,19 @@ const Carousel = () => {
     }, [slides.length]);
 
     return (
-        <div style={{ position: "relative", height: "250px", borderRadius: "24px", overflow: "hidden", marginBottom: "20px", background: "#000" }}>
-            {slides.map((bg, idx) => (
+        <div style={{ position: "relative", height: "100%", minHeight: "300px", borderRadius: "24px", overflow: "hidden", background: "#000" }}>
+            {slides.map((src, idx) => (
                 <div
                     key={idx}
                     style={{
-                        position: "absolute", inset: 0, background: bg,
+                        position: "absolute", inset: 0,
                         opacity: idx === current ? 1 : 0, transition: "opacity 0.8s ease-in-out",
-                        display: "flex", alignItems: "center", justifyContent: "center"
                     }}
                 >
-                    <h2 style={{ fontSize: "2rem", color: "rgba(255,255,255,0.1)", fontWeight: 700 }}>Event Slide {idx + 1}</h2>
+                    <img src={src} alt={`Slide ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div style={{ position: "absolute", bottom: 20, left: 20, background: "rgba(0,0,0,0.5)", padding: "10px 20px", borderRadius: "8px" }}>
+                         <h2 style={{ fontSize: "1.5rem", color: "#fff", margin: 0 }}>Event {idx + 1}</h2>
+                    </div>
                 </div>
             ))}
             <div style={{ position: "absolute", bottom: "16px", left: "0", right: "0", display: "flex", justifyContent: "center", gap: "8px" }}>
@@ -57,7 +59,7 @@ const NoticeWidget = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        api.get<Post[]>("/posts").then(res => {
+        api.get<Post[]>("/posts?notice=true").then(res => {
             setPosts(res.data.slice(0, 5));
             setLoading(false);
         }).catch(() => setLoading(false));
@@ -73,6 +75,7 @@ const NoticeWidget = () => {
                         {posts.map(p => (
                             <li key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <Link to={`/posts/${p.id}`} style={{ textDecoration: "none", color: "#e0e0e0", fontSize: "0.95rem", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginRight: "10px" }}>
+                                    <span style={{ color: "#ff6b6b", marginRight: "6px", fontWeight: "bold" }}>[Notice]</span>
                                     {p.title}
                                 </Link>
                                 <span className="muted" style={{ fontSize: "0.8rem", whiteSpace: "nowrap" }}>
@@ -167,11 +170,21 @@ export default function HomePage() {
 
   return (
     <Layout>
-      <Carousel />
+      {/* Top Section: Carousel (3) + Login (1) */}
+      <div style={{
+          display: "grid",
+          gridTemplateColumns: "3fr 1fr",
+          gap: "20px",
+          marginBottom: "20px",
+          height: "350px" // Fixed height for alignment
+      }}>
+          <Carousel />
+          <LoginWidget />
+      </div>
 
-      <div className="home-grid-section" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px", marginBottom: "30px" }}>
+      {/* Middle Section: Notices */}
+      <div style={{ marginBottom: "30px" }}>
            <NoticeWidget />
-           <LoginWidget />
       </div>
 
       <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px" }}>
