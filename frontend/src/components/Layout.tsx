@@ -82,19 +82,6 @@ export default function Layout({ children, pageTitle, subtitle }: LayoutProps) {
           </div>
         </header>
 
-        {(pageTitle || subtitle) && (
-          <div className="glass-card" style={{ marginBottom: 14 }}>
-            <div className="card-header">
-              <h1 className="card-title">{pageTitle ?? ""}</h1>
-              <span className="pill">
-                <span className="pill-dot" />
-                Modern Black & White
-              </span>
-            </div>
-            {subtitle && <p className="muted">{subtitle}</p>}
-          </div>
-        )}
-
         <main className="content-area">{children}</main>
 
         <footer className="footer">

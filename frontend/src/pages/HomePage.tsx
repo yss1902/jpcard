@@ -1,40 +1,185 @@
+import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { api } from "../libs/api";
+import type { Post } from "../types/post";
+
+const Carousel = () => {
+    const [current, setCurrent] = useState(0);
+    const slides = [
+        "linear-gradient(135deg, #1a1a1a, #2a2a2a)",
+        "linear-gradient(135deg, #2a2a2a, #3a3a3a)",
+        "linear-gradient(135deg, #111111, #222222)",
+        "linear-gradient(135deg, #000000, #1a1a1a)",
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrent((prev) => (prev + 1) % slides.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [slides.length]);
+
+    return (
+        <div style={{ position: "relative", height: "250px", borderRadius: "24px", overflow: "hidden", marginBottom: "20px", background: "#000" }}>
+            {slides.map((bg, idx) => (
+                <div
+                    key={idx}
+                    style={{
+                        position: "absolute", inset: 0, background: bg,
+                        opacity: idx === current ? 1 : 0, transition: "opacity 0.8s ease-in-out",
+                        display: "flex", alignItems: "center", justifyContent: "center"
+                    }}
+                >
+                    <h2 style={{ fontSize: "2rem", color: "rgba(255,255,255,0.1)", fontWeight: 700 }}>Event Slide {idx + 1}</h2>
+                </div>
+            ))}
+            <div style={{ position: "absolute", bottom: "16px", left: "0", right: "0", display: "flex", justifyContent: "center", gap: "8px" }}>
+                {slides.map((_, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => setCurrent(idx)}
+                        style={{
+                            width: "8px", height: "8px", borderRadius: "50%",
+                            background: idx === current ? "#fff" : "rgba(255,255,255,0.3)",
+                            border: "none", cursor: "pointer", padding: 0,
+                            transition: "background 0.3s"
+                        }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const NoticeWidget = () => {
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        api.get<Post[]>("/posts").then(res => {
+            setPosts(res.data.slice(0, 5));
+            setLoading(false);
+        }).catch(() => setLoading(false));
+    }, []);
+
+    return (
+        <div className="glass-card" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+            <h3 className="card-title" style={{ fontSize: "1.2rem", marginBottom: "16px" }}>Notices</h3>
+            <div style={{ flex: 1 }}>
+                {loading ? <p className="muted">Loading...</p> : (
+                    <ul style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        {posts.length === 0 && <li className="muted">No notices found.</li>}
+                        {posts.map(p => (
+                            <li key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <Link to={`/posts/${p.id}`} style={{ textDecoration: "none", color: "#e0e0e0", fontSize: "0.95rem", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginRight: "10px" }}>
+                                    {p.title}
+                                </Link>
+                                <span className="muted" style={{ fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                                    New
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+            <div style={{ marginTop: "16px", textAlign: "right" }}>
+                <Link to="/posts" className="muted" style={{ fontSize: "0.85rem", textDecoration: "underline" }}>View All</Link>
+            </div>
+        </div>
+    );
+};
+
+const LoginWidget = () => {
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+
+    const handleLogin = async () => {
+        if (!username || !password) return;
+        try {
+            const res = await api.post("/auth/login", { username, password });
+            localStorage.setItem("token", res.data.accessToken);
+            if (res.data.refreshToken) localStorage.setItem("refreshToken", res.data.refreshToken);
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            setError("Login failed.");
+        }
+    };
+
+    if (token) {
+        return (
+             <div className="glass-card" style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
+                 <h3 className="card-title" style={{ marginBottom: "10px" }}>Welcome Back!</h3>
+                 <p className="muted" style={{ marginBottom: "20px" }}>You are logged in.</p>
+                 <div style={{ display: "flex", gap: "10px" }}>
+                     <Link to="/dashboard" className="primary-btn">Dashboard</Link>
+                     <button className="secondary-btn" onClick={() => {
+                         if(window.confirm("Logout?")) {
+                             localStorage.removeItem("token");
+                             localStorage.removeItem("refreshToken");
+                             window.location.reload();
+                         }
+                     }}>Logout</button>
+                 </div>
+             </div>
+        );
+    }
+
+    return (
+        <div className="glass-card" style={{ height: "100%" }}>
+            <h3 className="card-title" style={{ fontSize: "1.2rem", marginBottom: "16px" }}>Quick Login</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <input
+                    className="text-input"
+                    placeholder="Username"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                />
+                <input
+                    className="text-input"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                />
+                <button className="primary-btn" onClick={handleLogin}>Login</button>
+                {error && <p style={{ color: "#ff6b6b", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
+                <div style={{ textAlign: "center", fontSize: "0.85rem" }}>
+                    <Link to="/register" className="muted" style={{ textDecoration: "underline" }}>Create Account</Link>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function HomePage() {
   const shortcuts = [
     { label: "Decks", to: "/decks" },
-    { label: "All Cards", to: "/cards" },
-    { label: "Study Mode", to: "/study" },
+    { label: "Study", to: "/study" },
     { label: "Community", to: "/posts" },
-    { label: "Dashboard", to: "/dashboard" },
   ];
 
   return (
-    <Layout pageTitle="Home">
-      <div className="card-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
-        {shortcuts.map((s) => (
-          <Link
-            key={s.to}
-            to={s.to}
-            className="glass-card"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: 120,
-              textAlign: 'center',
-              textDecoration: 'none',
-              color: 'inherit',
-              transition: 'transform 0.2s',
-              cursor: 'pointer'
-            }}
-            onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <h3 className="item-title" style={{ margin: 0, fontSize: '1.2rem' }}>{s.label}</h3>
-          </Link>
-        ))}
+    <Layout>
+      <Carousel />
+
+      <div className="home-grid-section" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px", marginBottom: "30px" }}>
+           <NoticeWidget />
+           <LoginWidget />
+      </div>
+
+      <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px" }}>
+           {shortcuts.map(s => (
+               <Link key={s.to} to={s.to} className="secondary-btn" style={{ padding: "10px 24px", minWidth: "120px", textAlign: "center" }}>
+                   {s.label}
+               </Link>
+           ))}
       </div>
     </Layout>
   );
