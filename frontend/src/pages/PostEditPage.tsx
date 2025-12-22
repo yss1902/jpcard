@@ -3,6 +3,8 @@ import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useParams, useNavigate } from "react-router-dom";
 import type { Post } from "../types/post";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
 export default function PostEditPage() {
   const { id } = useParams();
@@ -47,7 +49,7 @@ export default function PostEditPage() {
             </label>
             <input
               id="post-title"
-              className="input-field"
+              className="input-field text-input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -57,14 +59,13 @@ export default function PostEditPage() {
             <label htmlFor="post-content" style={{ display: "block", marginBottom: 4 }} className="muted">
               내용 (Content)
             </label>
-            <textarea
-              id="post-content"
-              className="input-field"
-              rows={5}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-            />
+            <div className="quill-wrapper">
+                <ReactQuill
+                    theme="snow"
+                    value={content}
+                    onChange={setContent}
+                />
+            </div>
           </div>
           <button type="submit" className="primary-btn" style={{ marginTop: 8 }}>
             수정 완료
