@@ -27,4 +27,7 @@ public class Card {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "deck_id")
     private Deck deck;
+
+    @Column(columnDefinition = "TEXT")
+    private String contentJson;
 }

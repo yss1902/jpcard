@@ -19,4 +19,8 @@ public class Deck {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "card_template_id")
+    private CardTemplate cardTemplate;
 }

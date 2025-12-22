@@ -1,5 +1,6 @@
 package com.jpcard.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jpcard.domain.card.Card;
 import com.jpcard.domain.deck.Deck;
 import com.jpcard.repository.CardRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +19,7 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final DeckRepository deckRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
     public List<Card> search(Long deckId, Boolean memorized, String keyword) {
@@ -34,7 +37,7 @@ public class CardService {
     }
 
     @Transactional
-    public Card create(String term, String meaning, Long deckId) {
+    public Card create(String term, String meaning, Long deckId, Map<String, String> content) {
         Card card = new Card();
         card.setTerm(term);
         card.setMeaning(meaning);
@@ -43,7 +46,19 @@ public class CardService {
                     .orElseThrow(() -> new ResourceNotFoundException("Deck not found with id: " + deckId));
             card.setDeck(deck);
         }
+        if (content != null) {
+            try {
+                card.setContentJson(objectMapper.writeValueAsString(content));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize content", e);
+            }
+        }
         return cardRepository.save(card);
+    }
+
+    @Transactional
+    public Card create(String term, String meaning, Long deckId) {
+        return create(term, meaning, deckId, null);
     }
 
     // Overload for backward compatibility if needed, or just replace usage

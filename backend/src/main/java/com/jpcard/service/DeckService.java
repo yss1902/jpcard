@@ -1,6 +1,8 @@
 package com.jpcard.service;
 
+import com.jpcard.domain.deck.CardTemplate;
 import com.jpcard.domain.deck.Deck;
+import com.jpcard.repository.CardTemplateRepository;
 import com.jpcard.repository.DeckRepository;
 import com.jpcard.util.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.List;
 public class DeckService {
 
     private final DeckRepository deckRepository;
+    private final CardTemplateRepository cardTemplateRepository;
 
     @Transactional(readOnly = true)
     public List<Deck> findAll() {
@@ -27,10 +30,15 @@ public class DeckService {
     }
 
     @Transactional
-    public Deck create(String name, String description) {
+    public Deck create(String name, String description, Long templateId) {
         Deck deck = new Deck();
         deck.setName(name);
         deck.setDescription(description);
+        if (templateId != null) {
+            CardTemplate template = cardTemplateRepository.findById(templateId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Template not found: " + templateId));
+            deck.setCardTemplate(template);
+        }
         return deckRepository.save(deck);
     }
 

@@ -1,4 +1,6 @@
 package com.jpcard.controller.dto;
 
-public record CardRequest(String term, String meaning, Long deckId) {
+import java.util.Map;
+
+public record CardRequest(String term, String meaning, Long deckId, Map<String, String> content) {
 }
