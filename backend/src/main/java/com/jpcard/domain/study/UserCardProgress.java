@@ -45,4 +45,7 @@ public class UserCardProgress {
     // Consecutive correct reviews
     @Column(nullable = false)
     private int repetitions = 0;
+
+    // To track daily limits
+    private LocalDateTime firstStudiedAt;
 }

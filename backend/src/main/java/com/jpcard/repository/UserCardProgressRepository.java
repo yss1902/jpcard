@@ -16,4 +16,7 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
     // Find progress for a specific deck that is due
     @Query("SELECT p FROM UserCardProgress p JOIN p.card c WHERE p.user.id = :userId AND c.deck.id = :deckId AND p.nextReview <= :now")
     List<UserCardProgress> findDueCards(@Param("userId") Long userId, @Param("deckId") Long deckId, @Param("now") LocalDateTime now);
+
+    @Query("SELECT COUNT(p) FROM UserCardProgress p JOIN p.card c WHERE p.user.id = :userId AND c.deck.id = :deckId AND p.firstStudiedAt BETWEEN :start AND :end")
+    long countNewCardsStudiedToday(@Param("userId") Long userId, @Param("deckId") Long deckId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

@@ -19,14 +19,16 @@ import java.util.stream.Collectors;
 public class StudyController {
 
     private final StudyService studyService;
-    private final UserService userService; // To resolve User ID from Auth
+    private final UserService userService;
 
     @GetMapping("/due")
-    public ResponseEntity<List<CardResponse>> getDueCards(@RequestParam Long deckId, Authentication authentication) {
+    public ResponseEntity<List<CardResponse>> getDueCards(@RequestParam Long deckId,
+                                                          @RequestParam(defaultValue = "false") boolean studyMore,
+                                                          Authentication authentication) {
         if (authentication == null) return ResponseEntity.status(401).build();
         User user = userService.findByUsername(authentication.getName()).orElseThrow();
 
-        var cards = studyService.getDueCards(user.getId(), deckId);
+        var cards = studyService.getDueCards(user.getId(), deckId, studyMore);
 
         List<CardResponse> responses = cards.stream()
                 .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), false, card.getDeck().getId()))
