@@ -1,6 +1,7 @@
 package com.jpcard.repository;
 
 import com.jpcard.domain.card.Card;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
                       @Param("memorized") Boolean memorized,
                       @Param("keyword") String keyword);
 
-    @Query("SELECT c FROM Card c WHERE c.deck.id = :deckId AND c.id NOT IN (SELECT p.card.id FROM UserCardProgress p WHERE p.user.id = :userId)")
-    List<Card> findNewCards(@Param("deckId") Long deckId, @Param("userId") Long userId);
+    @Query("SELECT c FROM Card c LEFT JOIN UserCardProgress p ON p.card = c AND p.user.id = :userId WHERE c.deck.id = :deckId AND p.id IS NULL")
+    List<Card> findNewCards(@Param("deckId") Long deckId, @Param("userId") Long userId, Pageable pageable);
 }

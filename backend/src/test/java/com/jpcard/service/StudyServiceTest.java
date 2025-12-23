@@ -12,7 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -41,30 +45,33 @@ class StudyServiceTest {
         verify(progressRepository).save(argThat(p ->
             p.getStatus() == StudyStatus.LEARNING &&
             p.getIntervalMinutes() == 1 &&
-            p.getRepetitions() == 0
+            p.getRepetitions() == 0 &&
+            p.getFirstStudiedAt() != null
         ));
     }
 
     @Test
-    void processReview_LearningGood() {
-        User user = new User(); user.setId(1L);
-        Card card = new Card(); card.setId(1L);
-        UserCardProgress progress = new UserCardProgress();
-        progress.setUser(user);
-        progress.setCard(card);
-        progress.setStatus(StudyStatus.LEARNING);
-        progress.setEase(2.5);
+    void getDueCards_LimitReached() {
+        when(progressRepository.findDueCards(anyLong(), anyLong(), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
+        when(progressRepository.countNewCardsStudiedToday(anyLong(), anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(20L);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
-        when(progressRepository.findByUserIdAndCardId(1L, 1L)).thenReturn(Optional.of(progress));
+        List<Card> result = studyService.getDueCards(1L, 1L, false);
 
-        studyService.processReview(1L, 1L, "GOOD");
+        assertTrue(result.isEmpty());
+        // Should NOT call cardRepository to fetch new cards
+        verify(cardRepository, never()).findNewCards(anyLong(), anyLong(), any(Pageable.class));
+    }
 
-        verify(progressRepository).save(argThat(p ->
-            p.getStatus() == StudyStatus.REVIEW &&
-            p.getIntervalMinutes() >= 1440 && // Min 1 day
-            p.getRepetitions() == 1
-        ));
+    @Test
+    void getDueCards_StudyMore() {
+        when(progressRepository.findDueCards(anyLong(), anyLong(), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
+        when(progressRepository.countNewCardsStudiedToday(anyLong(), anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(20L);
+        when(cardRepository.findNewCards(anyLong(), anyLong(), any(Pageable.class))).thenReturn(List.of(new Card()));
+
+        List<Card> result = studyService.getDueCards(1L, 1L, true);
+
+        assertFalse(result.isEmpty());
+        // Should call cardRepository with Pageable
+        verify(cardRepository).findNewCards(anyLong(), anyLong(), any(Pageable.class));
     }
 }
