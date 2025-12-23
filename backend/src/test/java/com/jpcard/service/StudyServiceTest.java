@@ -55,9 +55,10 @@ class StudyServiceTest {
         when(progressRepository.findDueCards(anyLong(), anyLong(), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
         when(progressRepository.countNewCardsStudiedToday(anyLong(), anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(20L);
 
-        List<Card> result = studyService.getDueCards(1L, 1L, false);
+        StudySessionResult result = studyService.getDueCards(1L, 1L, false);
 
-        assertTrue(result.isEmpty());
+        assertTrue(result.cards().isEmpty());
+        assertTrue(result.limitReached());
         // Should NOT call cardRepository to fetch new cards
         verify(cardRepository, never()).findNewCards(anyLong(), anyLong(), any(Pageable.class));
     }
@@ -68,9 +69,10 @@ class StudyServiceTest {
         when(progressRepository.countNewCardsStudiedToday(anyLong(), anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(20L);
         when(cardRepository.findNewCards(anyLong(), anyLong(), any(Pageable.class))).thenReturn(List.of(new Card()));
 
-        List<Card> result = studyService.getDueCards(1L, 1L, true);
+        StudySessionResult result = studyService.getDueCards(1L, 1L, true);
 
-        assertFalse(result.isEmpty());
+        assertFalse(result.cards().isEmpty());
+        assertFalse(result.limitReached());
         // Should call cardRepository with Pageable
         verify(cardRepository).findNewCards(anyLong(), anyLong(), any(Pageable.class));
     }

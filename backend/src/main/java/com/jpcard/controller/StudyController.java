@@ -2,8 +2,10 @@ package com.jpcard.controller;
 
 import com.jpcard.controller.dto.CardResponse;
 import com.jpcard.controller.dto.ReviewRequest;
+import com.jpcard.controller.dto.StudySessionResponse;
 import com.jpcard.domain.user.User;
 import com.jpcard.service.StudyService;
+import com.jpcard.service.StudySessionResult;
 import com.jpcard.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,18 +24,28 @@ public class StudyController {
     private final UserService userService;
 
     @GetMapping("/due")
-    public ResponseEntity<List<CardResponse>> getDueCards(@RequestParam Long deckId,
+    public ResponseEntity<StudySessionResponse> getDueCards(@RequestParam Long deckId,
                                                           @RequestParam(defaultValue = "false") boolean studyMore,
                                                           Authentication authentication) {
         if (authentication == null) return ResponseEntity.status(401).build();
         User user = userService.findByUsername(authentication.getName()).orElseThrow();
 
-        var cards = studyService.getDueCards(user.getId(), deckId, studyMore);
+        StudySessionResult result = studyService.getDueCards(user.getId(), deckId, studyMore);
 
-        List<CardResponse> responses = cards.stream()
+        List<CardResponse> cardResponses = result.cards().stream()
                 .map(card -> new CardResponse(card.getId(), card.getTerm(), card.getMeaning(), false, card.getDeck().getId()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+
+        StudySessionResponse response = new StudySessionResponse(
+            cardResponses,
+            result.limitReached(),
+            result.newCardsInBatch(),
+            result.dueCardsInBatch(),
+            result.newCardsStudiedToday(),
+            result.dailyLimit()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/review")
