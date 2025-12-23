@@ -113,7 +113,7 @@ export default function DeckCreatePage() {
                             value={selectedTemplateId || ""}
                             onChange={e => setSelectedTemplateId(Number(e.target.value))}
                         >
-                            {templates.map(t => <option key={t.id} value={t.id}>{t.name} ({t.fieldNames.join(", ")})</option>)}
+                            {templates.map(t => <option key={t.id} value={t.id} style={{ color: "black" }}>{t.name} ({t.fieldNames.join(", ")})</option>)}
                         </select>
                         <button type="button" className="secondary-btn" onClick={() => setIsCreatingTemplate(true)}>New</button>
                     </div>

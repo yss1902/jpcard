@@ -75,9 +75,9 @@ export default function CardCreatePage() {
                  onChange={e => setDeckId(e.target.value)}
                  style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: "12px 16px" }}
                >
-                  <option value="">No Deck (Unassigned - Basic)</option>
+                  <option value="" style={{ color: "black" }}>No Deck (Unassigned - Basic)</option>
                   {decks.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                      <option key={d.id} value={d.id} style={{ color: "black" }}>{d.name}</option>
                   ))}
                </select>
             </div>
