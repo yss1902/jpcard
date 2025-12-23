@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "../libs/api";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { CardTemplate } from "../types/template";
+import { type CardTemplate } from "../types/template";
 
 export default function DeckCreatePage() {
   const navigate = useNavigate();
