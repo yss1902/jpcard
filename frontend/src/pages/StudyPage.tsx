@@ -4,7 +4,16 @@ import { speak } from "../libs/tts";
 import Layout from "../components/Layout";
 import type { Card } from "../types/card";
 import { useSearchParams } from "react-router-dom";
-import "../App.css"; // Ensure CSS is available
+import "../App.css";
+
+interface StudySessionResponse {
+  cards: Card[];
+  limitReached: boolean;
+  newCardsCount: number;
+  dueCardsCount: number;
+  newCardsStudiedToday: number;
+  dailyLimit: number;
+}
 
 export default function StudyPage() {
   const [searchParams] = useSearchParams();
@@ -15,18 +24,39 @@ export default function StudyPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
+  const [stats, setStats] = useState({
+      limitReached: false,
+      newCardsCount: 0,
+      dueCardsCount: 0,
+      newCardsStudiedToday: 0,
+      dailyLimit: 20
+  });
+
   useEffect(() => {
-    fetchCards();
+    fetchCards(false);
   }, [deckId]);
 
-  const fetchCards = () => {
+  const fetchCards = (studyMore: boolean) => {
     setLoading(true);
-    const endpoint = deckId ? `/study/due?deckId=${deckId}` : "/cards";
+
+    // Correct URL construction
+    const params = new URLSearchParams();
+    if (deckId) params.append("deckId", deckId);
+    params.append("studyMore", String(studyMore));
 
     api
-      .get<Card[]>(endpoint)
+      .get<StudySessionResponse>(`/study/due?${params.toString()}`)
       .then((res) => {
-        setCards(res.data);
+        setCards(res.data.cards);
+        setStats({
+            limitReached: res.data.limitReached,
+            newCardsCount: res.data.newCardsCount,
+            dueCardsCount: res.data.dueCardsCount,
+            newCardsStudiedToday: res.data.newCardsStudiedToday,
+            dailyLimit: res.data.dailyLimit
+        });
+        setCurrentIndex(0);
+        setIsFlipped(false);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
@@ -38,14 +68,12 @@ export default function StudyPage() {
     if (!currentCard) return;
     try {
         await api.post("/study/review", { cardId: currentCard.id, rating });
-        // Move to next card
+
         setIsFlipped(false);
         if (currentIndex < cards.length - 1) {
             setCurrentIndex(prev => prev + 1);
         } else {
-            // Refetch to see if more due
-            fetchCards();
-            setCurrentIndex(0);
+            setCards([]); // Trigger session complete
         }
     } catch (err) {
         console.error(err);
@@ -54,12 +82,30 @@ export default function StudyPage() {
 
   if (loading) return <Layout pageTitle="Study Mode"><p className="muted">Loading cards...</p></Layout>;
 
+  // Session Complete View
   if (cards.length === 0) {
     return (
       <Layout pageTitle="Study Mode">
          <section className="glass-card" style={{ textAlign: "center", padding: "40px 20px" }}>
-            <h2 className="card-title">All caught up!</h2>
-            <p className="muted">No cards due for review right now.</p>
+            {stats.limitReached ? (
+                <>
+                    <h2 className="card-title">Daily Goal Reached! ({stats.newCardsStudiedToday}/{stats.dailyLimit})</h2>
+                    <p className="muted">Great job! You've hit your daily limit for new cards.</p>
+                    <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center' }}>
+                        <button className="secondary-btn" onClick={() => window.location.href = '/dashboard'}>Finish</button>
+                        <button className="primary-btn" onClick={() => fetchCards(true)}>Study More (+10)</button>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <h2 className="card-title">All caught up!</h2>
+                    <p className="muted">No cards due for review right now.</p>
+                    <div style={{ marginTop: 20 }}>
+                        <button className="secondary-btn" onClick={() => window.location.href = '/dashboard'}>Return to Dashboard</button>
+                        {/* Optional: Study Ahead */}
+                    </div>
+                </>
+            )}
          </section>
       </Layout>
     );
@@ -67,6 +113,13 @@ export default function StudyPage() {
 
   return (
     <Layout pageTitle="Study Mode">
+      {/* Counters */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 10, fontSize: '0.9rem', color: '#ccc' }}>
+         <span>Due: {stats.dueCardsCount}</span>
+         <span>|</span>
+         <span>New: {stats.newCardsCount}</span>
+      </div>
+
       <div className="study-container">
         <div
           className={`flash-card ${isFlipped ? "flipped" : ""}`}
@@ -119,7 +172,6 @@ export default function StudyPage() {
         )}
       </div>
 
-      {/* Inline Styles */}
       <style>{`
         .study-container {
           display: flex;

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class StudyService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public List<Card> getDueCards(Long userId, Long deckId, boolean studyMore) {
+    public StudySessionResult getDueCards(Long userId, Long deckId, boolean studyMore) {
         // 1. Get existing progress that is due
         List<UserCardProgress> dueProgress = progressRepository.findDueCards(userId, deckId, LocalDateTime.now());
         List<Card> dueCards = dueProgress.stream().map(UserCardProgress::getCard).collect(Collectors.toList());
@@ -41,14 +42,21 @@ public class StudyService {
         long newCardsStudiedToday = progressRepository.countNewCardsStudiedToday(userId, deckId, startOfDay, endOfDay);
 
         int remainingLimit = dailyLimit - (int) newCardsStudiedToday;
+        boolean limitReached = false;
 
         if (remainingLimit <= 0 && !studyMore) {
-            return dueCards;
+            limitReached = true;
         }
 
-        int fetchCount = remainingLimit;
-        if (studyMore) {
-            fetchCount = (remainingLimit > 0) ? remainingLimit : 10;
+        int fetchCount = 0;
+        if (!limitReached) {
+            if (studyMore) {
+                // If study more, fetch a batch regardless of limit (or remaining if positive?)
+                // "fetch additional new cards (e.g., +10)"
+                fetchCount = (remainingLimit > 0) ? remainingLimit : 10;
+            } else {
+                fetchCount = remainingLimit;
+            }
         }
 
         List<Card> newCards = Collections.emptyList();
@@ -56,8 +64,17 @@ public class StudyService {
             newCards = cardRepository.findNewCards(deckId, userId, PageRequest.of(0, fetchCount));
         }
 
-        dueCards.addAll(newCards);
-        return dueCards;
+        List<Card> allCards = new ArrayList<>(dueCards);
+        allCards.addAll(newCards);
+
+        return new StudySessionResult(
+            allCards,
+            limitReached,
+            newCardsStudiedToday,
+            dailyLimit,
+            newCards.size(),
+            dueCards.size()
+        );
     }
 
     @Transactional
