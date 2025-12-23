@@ -28,11 +28,14 @@ export default function DeckDetailPage() {
         <div className="card-header">
           <h2 className="card-title">{deck.name}</h2>
           <div style={{ display: 'flex', gap: 10 }}>
-             <Link to={`/decks/${id}/edit`} className="secondary-btn">
-               Edit Deck
+             <Link to={`/study?deckId=${id}`} className="primary-btn" style={{ background: 'linear-gradient(135deg, #1890ff, #096dd9)', borderColor: 'transparent' }}>
+               Study Now
              </Link>
-             <Link to={`/cards/create?deckId=${id}`} className="primary-btn">
+             <Link to={`/cards/create?deckId=${id}`} className="secondary-btn">
                Add Card
+             </Link>
+             <Link to={`/decks/${id}/edit`} className="secondary-btn">
+               Edit
              </Link>
           </div>
         </div>

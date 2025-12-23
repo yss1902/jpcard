@@ -3,7 +3,8 @@ import { api } from "../libs/api";
 import { speak } from "../libs/tts";
 import Layout from "../components/Layout";
 import type { Card } from "../types/card";
-import { useSearchParams } from "react-router-dom";
+import type { Deck } from "../types/deck";
+import { useSearchParams, Link } from "react-router-dom";
 import "../App.css";
 
 interface StudySessionResponse {
@@ -20,6 +21,7 @@ export default function StudyPage() {
   const deckId = searchParams.get("deckId");
 
   const [cards, setCards] = useState<Card[]>([]);
+  const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -33,13 +35,24 @@ export default function StudyPage() {
   });
 
   useEffect(() => {
-    fetchCards(false);
+    if (deckId) {
+        fetchCards(false);
+    } else {
+        fetchDecks();
+    }
   }, [deckId]);
+
+  const fetchDecks = () => {
+      setLoading(true);
+      api.get<Deck[]>("/decks")
+         .then(res => setDecks(res.data))
+         .catch(console.error)
+         .finally(() => setLoading(false));
+  };
 
   const fetchCards = (studyMore: boolean) => {
     setLoading(true);
 
-    // Correct URL construction
     const params = new URLSearchParams();
     if (deckId) params.append("deckId", deckId);
     params.append("studyMore", String(studyMore));
@@ -80,7 +93,33 @@ export default function StudyPage() {
     }
   };
 
-  if (loading) return <Layout pageTitle="Study Mode"><p className="muted">Loading cards...</p></Layout>;
+  if (loading) return <Layout pageTitle="Study Mode"><p className="muted">Loading...</p></Layout>;
+
+  // Deck Selection View
+  if (!deckId) {
+      return (
+        <Layout pageTitle="Select Deck">
+            <div className="glass-card">
+                <h2 className="card-title" style={{ marginBottom: 20 }}>Choose a Deck to Study</h2>
+                {decks.length === 0 ? (
+                    <p className="muted">No decks found. <Link to="/decks/create" style={{ textDecoration: "underline" }}>Create one?</Link></p>
+                ) : (
+                    <div className="card-grid">
+                        {decks.map(d => (
+                            <Link key={d.id} to={`/study?deckId=${d.id}`} className="item-tile" style={{ display: 'block', textDecoration: 'none' }}>
+                                <h3 className="item-title">{d.name}</h3>
+                                <p className="item-subtitle">{d.description}</p>
+                                <div style={{ marginTop: 10, color: '#1890ff', fontSize: '0.9rem' }}>
+                                    Start Session &rarr;
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </Layout>
+      );
+  }
 
   // Session Complete View
   if (cards.length === 0) {
@@ -102,7 +141,6 @@ export default function StudyPage() {
                     <p className="muted">No cards due for review right now.</p>
                     <div style={{ marginTop: 20 }}>
                         <button className="secondary-btn" onClick={() => window.location.href = '/dashboard'}>Return to Dashboard</button>
-                        {/* Optional: Study Ahead */}
                     </div>
                 </>
             )}

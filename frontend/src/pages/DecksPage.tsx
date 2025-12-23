@@ -36,10 +36,17 @@ export default function DecksPage() {
         <div className="card-grid" style={{ marginTop: 20 }}>
           {decks.map((deck) => (
              <article key={deck.id} className="item-tile">
-                <h3 className="item-title">{deck.name}</h3>
-                <p className="item-subtitle">{deck.description}</p>
-                <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
-                   <Link to={`/decks/${deck.id}`} className="muted" style={{ textDecoration: 'underline' }}>View Cards</Link>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                    <div>
+                        <h3 className="item-title">{deck.name}</h3>
+                        <p className="item-subtitle">{deck.description}</p>
+                    </div>
+                    <Link to={`/study?deckId=${deck.id}`} className="primary-btn" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                        Study
+                    </Link>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                   <Link to={`/decks/${deck.id}`} className="muted" style={{ textDecoration: 'underline', fontSize: '0.9rem' }}>View Details / Cards</Link>
                 </div>
              </article>
           ))}
