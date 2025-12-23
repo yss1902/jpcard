@@ -13,9 +13,7 @@ export default function DeckDetailPage() {
   const [status, setStatus] = useState("Loading...");
 
   useEffect(() => {
-    // Fetch deck info
     api.get<Deck>(`/decks/${id}`).then(res => setDeck(res.data)).catch(console.error);
-    // Fetch cards in deck
     api.get<Card[]>(`/cards?deckId=${id}`).then(res => {
         setCards(res.data);
         setStatus(res.data.length ? "" : "No cards in this deck.");
@@ -28,11 +26,17 @@ export default function DeckDetailPage() {
     <Layout pageTitle={deck.name}>
       <section className="glass-card">
         <div className="card-header">
-          <h2 className="card-title">Cards in Deck</h2>
-          <Link to={`/cards/create?deckId=${id}`} className="primary-btn">
-            Add Card to Deck
-          </Link>
+          <h2 className="card-title">{deck.name}</h2>
+          <div style={{ display: 'flex', gap: 10 }}>
+             <Link to={`/decks/${id}/edit`} className="secondary-btn">
+               Edit Deck
+             </Link>
+             <Link to={`/cards/create?deckId=${id}`} className="primary-btn">
+               Add Card
+             </Link>
+          </div>
         </div>
+        <p className="item-subtitle" style={{ marginBottom: 20 }}>{deck.description}</p>
 
         {status && <p className="muted" style={{marginTop: 10}}>{status}</p>}
 
