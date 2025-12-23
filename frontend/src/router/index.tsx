@@ -6,6 +6,7 @@ import CardCreatePage from "../pages/CardCreatePage";
 import CardEditPage from "../pages/CardEditPage";
 import DecksPage from "../pages/DecksPage";
 import DeckCreatePage from "../pages/DeckCreatePage";
+import DeckEditPage from "../pages/DeckEditPage";
 import DeckDetailPage from "../pages/DeckDetailPage";
 import StudyPage from "../pages/StudyPage";
 import PostsPage from "../pages/PostsPage";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "decks", element: <DecksPage /> },
       { path: "decks/create", element: <DeckCreatePage /> },
       { path: "decks/:id", element: <DeckDetailPage /> },
+      { path: "decks/:id/edit", element: <DeckEditPage /> },
       { path: "study", element: <StudyPage /> },
       { path: "posts", element: <PostsPage /> },
       { path: "posts/create", element: <PostCreatePage /> },
