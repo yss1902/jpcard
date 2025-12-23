@@ -1,6 +1,5 @@
 package com.jpcard.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jpcard.domain.card.Card;
 import com.jpcard.domain.deck.Deck;
 import com.jpcard.repository.CardRepository;
@@ -9,6 +8,7 @@ import com.jpcard.util.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
