@@ -1,5 +1,6 @@
 package com.jpcard.repository;
 
+import com.jpcard.domain.study.StudyStatus;
 import com.jpcard.domain.study.UserCardProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,7 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
 
     @Query("SELECT COUNT(p) FROM UserCardProgress p JOIN p.card c WHERE p.user.id = :userId AND c.deck.id = :deckId AND p.firstStudiedAt BETWEEN :start AND :end")
     long countNewCardsStudiedToday(@Param("userId") Long userId, @Param("deckId") Long deckId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    long countByUserIdAndNextReviewLessThanEqual(Long userId, LocalDateTime now);
+    long countByUserIdAndStatus(Long userId, StudyStatus status);
 }

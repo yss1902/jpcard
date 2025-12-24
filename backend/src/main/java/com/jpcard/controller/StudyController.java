@@ -23,12 +23,21 @@ public class StudyController {
     private final StudyService studyService;
     private final UserService userService;
 
+    private User getUser(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            return (User) principal;
+        }
+        return userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new java.util.NoSuchElementException("User not found"));
+    }
+
     @GetMapping("/due")
     public ResponseEntity<StudySessionResponse> getDueCards(@RequestParam Long deckId,
                                                           @RequestParam(defaultValue = "false") boolean studyMore,
                                                           Authentication authentication) {
         if (authentication == null) return ResponseEntity.status(401).build();
-        User user = userService.findByUsername(authentication.getName()).orElseThrow();
+        User user = getUser(authentication);
 
         StudySessionResult result = studyService.getDueCards(user.getId(), deckId, studyMore);
 
@@ -51,7 +60,7 @@ public class StudyController {
     @PostMapping("/review")
     public ResponseEntity<Void> reviewCard(@RequestBody ReviewRequest request, Authentication authentication) {
         if (authentication == null) return ResponseEntity.status(401).build();
-        User user = userService.findByUsername(authentication.getName()).orElseThrow();
+        User user = getUser(authentication);
 
         studyService.processReview(user.getId(), request.cardId(), request.rating());
         return ResponseEntity.ok().build();
