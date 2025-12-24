@@ -1,13 +1,13 @@
 package com.jpcard.controller;
 
 import com.jpcard.controller.dto.UserInfoResponse;
+import com.jpcard.controller.dto.UserSettingsRequest;
 import com.jpcard.domain.user.User;
+import com.jpcard.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.Set;
@@ -18,24 +18,35 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserController {
 
+    private final UserService userService;
+
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication auth) {
 
-        // 1. 인증 정보가 없거나 올바르지 않은 경우 방어
-        if (auth == null || !(auth.getPrincipal() instanceof User)) {
+        if (auth == null) {
             return ResponseEntity.status(401).body("Invalid authentication principal");
         }
 
-        // 2. 안전하게 캐스팅
-        User user = (User) auth.getPrincipal();
+        // Fetch fresh from DB to be sure about settings
+        User principal = (User) auth.getPrincipal();
+        User user = userService.findById(principal.getId()).orElseThrow();
 
-        // 3. roles가 null일 경우 방어 로직 추가
         Set<String> roles = (user.getRoles() != null)
                 ? user.getRoles().stream().map(Enum::name).collect(Collectors.toSet())
                 : Collections.emptySet();
 
         return ResponseEntity.ok(
-                new UserInfoResponse(user.getId(), user.getUsername(), roles)
+                new UserInfoResponse(user.getId(), user.getUsername(), roles, user.getDailyLimit())
         );
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> updateMe(@RequestBody UserSettingsRequest request, Authentication auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
+        User principal = (User) auth.getPrincipal();
+
+        User updated = userService.updateSettings(principal.getId(), request.dailyLimit());
+
+        return ResponseEntity.ok().build();
     }
 }

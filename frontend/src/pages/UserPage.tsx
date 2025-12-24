@@ -8,28 +8,42 @@ export default function UserPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState("Loading profile...");
+  const [editingLimit, setEditingLimit] = useState(false);
+  const [newLimit, setNewLimit] = useState(20);
 
   useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const fetchUser = () => {
     api
       .get<User>("/users/me")
       .then((res) => {
-        // 성공 시 데이터 확인용 로그
-        console.log("User Data:", res.data); 
         setUser(res.data);
+        setNewLimit(res.data.dailyLimit);
         setStatus("");
       })
       .catch((err) => {
-        // ★ 에러의 진짜 내용을 콘솔과 화면에 출력합니다.
-        console.error("API Error Details:", err);
-        // 만약 HTML이 반환된다면 Proxy 문제, 403이면 토큰 문제
-        setStatus(`Error: ${err.message} (Check Console)`);
+        console.error(err);
+        setStatus(`Error: ${err.message}`);
       });
-  }, []);
+  };
 
   const onLogout = () => {
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       navigate("/login");
+  };
+
+  const onUpdateSettings = async () => {
+      try {
+          await api.patch("/users/me", { dailyLimit: Number(newLimit) });
+          setEditingLimit(false);
+          fetchUser();
+      } catch (err) {
+          console.error(err);
+          alert("Failed to update settings");
+      }
   };
 
   return (
@@ -58,6 +72,35 @@ export default function UserPage() {
                   </span>
                 ))}
               </div>
+            </div>
+
+            <div className="action-card">
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div>
+                       <p className="muted">Daily New Cards Limit</p>
+                       {editingLimit ? (
+                           <input
+                             type="number"
+                             className="input-field"
+                             style={{ width: 100, padding: '4px 8px' }}
+                             value={newLimit}
+                             onChange={e => setNewLimit(e.target.valueAsNumber)}
+                           />
+                       ) : (
+                           <h3 className="item-title">{user.dailyLimit} cards</h3>
+                       )}
+                   </div>
+                   <div>
+                       {editingLimit ? (
+                           <div style={{ display: 'flex', gap: 5 }}>
+                               <button className="primary-btn" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={onUpdateSettings}>Save</button>
+                               <button className="secondary-btn" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => { setEditingLimit(false); setNewLimit(user.dailyLimit); }}>Cancel</button>
+                           </div>
+                       ) : (
+                           <button className="secondary-btn" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => setEditingLimit(true)}>Edit</button>
+                       )}
+                   </div>
+               </div>
             </div>
           </div>
         )}
