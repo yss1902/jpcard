@@ -9,6 +9,7 @@ interface DashboardStats {
   totalDecks: number;
   totalPosts: number;
   totalLikes: number;
+  dueCards: number;
 }
 
 export default function DashboardPage() {
@@ -34,7 +35,7 @@ export default function DashboardPage() {
 
          <div style={{ marginTop: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-               <span>Memorized</span>
+               <span>Memorized (Mastered)</span>
                <span>{memorizedPercent}% ({stats.memorizedCards}/{stats.totalCards})</span>
             </div>
             <div style={{ width: '100%', height: 10, background: 'rgba(255,255,255,0.1)', borderRadius: 5, overflow: 'hidden' }}>
@@ -44,6 +45,11 @@ export default function DashboardPage() {
       </div>
 
       <div className="card-grid">
+         <div className="item-tile" style={{ textAlign: 'center', background: 'rgba(24, 144, 255, 0.15)', borderColor: 'rgba(24, 144, 255, 0.3)' }}>
+            <h3 className="item-title" style={{ fontSize: '2rem', color: '#40a9ff' }}>{stats.dueCards}</h3>
+            <p className="item-subtitle" style={{ color: '#bae7ff' }}>Cards Due Today</p>
+            <Link to="/study" style={{ marginTop: 10, display: 'inline-block', fontSize: '0.8rem', textDecoration: 'underline', color: 'inherit' }}>Start Review</Link>
+         </div>
          <div className="item-tile" style={{ textAlign: 'center' }}>
             <h3 className="item-title" style={{ fontSize: '2rem' }}>{stats.totalDecks}</h3>
             <p className="item-subtitle">Decks Created</p>
@@ -61,7 +67,7 @@ export default function DashboardPage() {
          </div>
          <div className="item-tile" style={{ textAlign: 'center' }}>
             <h3 className="item-title" style={{ fontSize: '2rem' }}>{stats.totalLikes}</h3>
-            <p className="item-subtitle">Community Likes Received</p>
+            <p className="item-subtitle">Community Likes</p>
          </div>
       </div>
     </Layout>

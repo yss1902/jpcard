@@ -5,5 +5,6 @@ public record DashboardStatsResponse(
     long memorizedCards,
     long totalDecks,
     long totalPosts,
-    long totalLikes
+    long totalLikes,
+    long dueCards
 ) {}
