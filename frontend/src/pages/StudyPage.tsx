@@ -82,6 +82,10 @@ export default function StudyPage() {
     try {
         await api.post("/study/review", { cardId: currentCard.id, rating });
 
+        // Update local stats if it was a new card?
+        // Complex to track locally without refetch.
+        // We just verify session progress.
+
         setIsFlipped(false);
         if (currentIndex < cards.length - 1) {
             setCurrentIndex(prev => prev + 1);
@@ -151,14 +155,25 @@ export default function StudyPage() {
 
   return (
     <Layout pageTitle="Study Mode">
-      {/* Counters */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 10, fontSize: '0.9rem', color: '#ccc' }}>
-         <span>Due: {stats.dueCardsCount}</span>
-         <span>|</span>
-         <span>New: {stats.newCardsCount}</span>
-      </div>
 
       <div className="study-container">
+
+        {/* Progress Bar */}
+        <div style={{ width: '100%', maxWidth: 400 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#888', marginBottom: 5 }}>
+                <span>Session: {currentIndex + 1} / {cards.length}</span>
+                <span>Daily Goal: {stats.newCardsStudiedToday} / {stats.dailyLimit}</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
+                    width: `${((currentIndex + 1) / cards.length) * 100}%`,
+                    transition: 'width 0.3s ease'
+                }} />
+            </div>
+        </div>
+
         <div
           className={`flash-card ${isFlipped ? "flipped" : ""}`}
           onClick={() => setIsFlipped(!isFlipped)}

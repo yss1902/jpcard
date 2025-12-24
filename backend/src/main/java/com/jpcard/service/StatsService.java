@@ -26,17 +26,16 @@ public class StatsService {
     public DashboardStatsResponse getDashboardStats(Long userId) {
         long totalCards = cardRepository.count();
 
-        // "Memorized" in SRS context usually means mature cards or those in 'REVIEW' status with significant interval.
-        // For simplicity, let's count cards in 'REVIEW' status for this user.
         long memorizedCards = progressRepository.countByUserIdAndStatus(userId, StudyStatus.REVIEW);
+        long learningCards = progressRepository.countByUserIdAndStatus(userId, StudyStatus.LEARNING);
+        long newCards = Math.max(0, totalCards - memorizedCards - learningCards);
 
         long totalDecks = deckRepository.count();
         long totalPosts = postRepository.count();
         long totalLikes = postRepository.findAll().stream().mapToLong(Post::getLikeCount).sum();
 
-        // Due Cards
         long dueCards = progressRepository.countByUserIdAndNextReviewLessThanEqual(userId, LocalDateTime.now());
 
-        return new DashboardStatsResponse(totalCards, memorizedCards, totalDecks, totalPosts, totalLikes, dueCards);
+        return new DashboardStatsResponse(totalCards, memorizedCards, learningCards, newCards, totalDecks, totalPosts, totalLikes, dueCards);
     }
 }

@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +39,7 @@ class StatsServiceTest {
         when(postRepository.count()).thenReturn(5L);
         when(postRepository.findAll()).thenReturn(Collections.emptyList());
         when(progressRepository.countByUserIdAndStatus(anyLong(), eq(StudyStatus.REVIEW))).thenReturn(30L);
+        when(progressRepository.countByUserIdAndStatus(anyLong(), eq(StudyStatus.LEARNING))).thenReturn(10L);
         when(progressRepository.countByUserIdAndNextReviewLessThanEqual(anyLong(), any(LocalDateTime.class))).thenReturn(5L);
 
         DashboardStatsResponse stats = statsService.getDashboardStats(1L);
@@ -48,6 +48,8 @@ class StatsServiceTest {
         assertEquals(10, stats.totalDecks());
         assertEquals(5, stats.totalPosts());
         assertEquals(30, stats.memorizedCards());
+        assertEquals(10, stats.learningCards());
+        assertEquals(60, stats.newCards());
         assertEquals(5, stats.dueCards());
     }
 }
