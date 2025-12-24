@@ -23,4 +23,6 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
 
     long countByUserIdAndNextReviewLessThanEqual(Long userId, LocalDateTime now);
     long countByUserIdAndStatus(Long userId, StudyStatus status);
+
+    void deleteByCardDeckId(Long deckId);
 }
