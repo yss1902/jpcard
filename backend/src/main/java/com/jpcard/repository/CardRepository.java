@@ -20,4 +20,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     @Query("SELECT c FROM Card c LEFT JOIN UserCardProgress p ON p.card = c AND p.user.id = :userId WHERE c.deck.id = :deckId AND p.id IS NULL")
     List<Card> findNewCards(@Param("deckId") Long deckId, @Param("userId") Long userId, Pageable pageable);
+
+    void deleteByDeckId(Long deckId);
 }

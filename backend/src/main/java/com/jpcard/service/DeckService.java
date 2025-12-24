@@ -2,8 +2,10 @@ package com.jpcard.service;
 
 import com.jpcard.domain.deck.CardTemplate;
 import com.jpcard.domain.deck.Deck;
+import com.jpcard.repository.CardRepository;
 import com.jpcard.repository.CardTemplateRepository;
 import com.jpcard.repository.DeckRepository;
+import com.jpcard.repository.UserCardProgressRepository;
 import com.jpcard.util.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ public class DeckService {
 
     private final DeckRepository deckRepository;
     private final CardTemplateRepository cardTemplateRepository;
+    private final CardRepository cardRepository;
+    private final UserCardProgressRepository progressRepository;
 
     @Transactional(readOnly = true)
     public List<Deck> findAll() {
@@ -52,12 +56,9 @@ public class DeckService {
 
     @Transactional
     public void delete(Long id) {
-        // Ideally we should handle cards in this deck (cascade delete or unlink).
-        // For now, default JPA behavior might restrict delete if cards exist, or cascade if configured.
-        // I haven't configured CascadeType in Card, so this might fail if cards exist.
-        // I should probably delete associated cards or unlink them.
-        // For phase 1, let's assume cascade delete at DB level or just let it fail if not empty.
-        // Actually, let's just delete the deck. If constrained, user will get error.
+        // Cascade delete progress and cards
+        progressRepository.deleteByCardDeckId(id);
+        cardRepository.deleteByDeckId(id);
         deckRepository.deleteById(id);
     }
 }
