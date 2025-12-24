@@ -30,12 +30,15 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public StudySessionResult getDueCards(Long userId, Long deckId, boolean studyMore) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         // 1. Get existing progress that is due
         List<UserCardProgress> dueProgress = progressRepository.findDueCards(userId, deckId, LocalDateTime.now());
         List<Card> dueCards = dueProgress.stream().map(UserCardProgress::getCard).collect(Collectors.toList());
 
         // 2. Get NEW cards with limits
-        int dailyLimit = 20;
+        int dailyLimit = user.getDailyLimit();
 
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);

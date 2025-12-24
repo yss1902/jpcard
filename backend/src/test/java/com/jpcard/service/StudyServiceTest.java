@@ -52,6 +52,11 @@ class StudyServiceTest {
 
     @Test
     void getDueCards_LimitReached() {
+        User user = new User();
+        user.setId(1L);
+        user.setDailyLimit(20);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(progressRepository.findDueCards(anyLong(), anyLong(), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
         when(progressRepository.countNewCardsStudiedToday(anyLong(), anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(20L);
 
@@ -59,12 +64,16 @@ class StudyServiceTest {
 
         assertTrue(result.cards().isEmpty());
         assertTrue(result.limitReached());
-        // Should NOT call cardRepository to fetch new cards
         verify(cardRepository, never()).findNewCards(anyLong(), anyLong(), any(Pageable.class));
     }
 
     @Test
     void getDueCards_StudyMore() {
+        User user = new User();
+        user.setId(1L);
+        user.setDailyLimit(20);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(progressRepository.findDueCards(anyLong(), anyLong(), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
         when(progressRepository.countNewCardsStudiedToday(anyLong(), anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(20L);
         when(cardRepository.findNewCards(anyLong(), anyLong(), any(Pageable.class))).thenReturn(List.of(new Card()));
@@ -73,7 +82,6 @@ class StudyServiceTest {
 
         assertFalse(result.cards().isEmpty());
         assertFalse(result.limitReached());
-        // Should call cardRepository with Pageable
         verify(cardRepository).findNewCards(anyLong(), anyLong(), any(Pageable.class));
     }
 }

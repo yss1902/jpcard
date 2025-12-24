@@ -29,8 +29,10 @@ public class User {
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
 
-    private String refreshToken;   // 로그인/재발급/로그아웃에 필요
+    private String refreshToken;
+
+    @Column(nullable = false)
+    private int dailyLimit = 20; // Default 20
 
     public void addRole(Role role) { roles.add(role); }
 }
-
